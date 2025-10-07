@@ -1,0 +1,59 @@
+{
+  "name": "garden-planter",
+  "version": "1.0.0",
+  "description": "A comprehensive garden planning application with personalized schedules and notifications",
+  "private": true,
+  "dependencies": {
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.3.4",
+    "firebase": "^12.3.0",
+    "react": "^18.2.0",
+    "react-calendar": "^4.6.0",
+    "react-datepicker": "^4.10.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.1",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run emulators\" \"npm run start:frontend\"",
+    "start:frontend": "NODE_OPTIONS='--no-deprecation' react-scripts start",
+    "start:local": "REACT_APP_USE_LOCALSTORAGE=true react-scripts start",
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "test": "react-scripts test",
+    "test:unit": "react-scripts test --testPathPattern=tests/unit",
+    "test:integration": "react-scripts test --testPathPattern=tests/integration",
+    "eject": "react-scripts eject",
+    "emulators": "npx firebase emulators:start --only auth,firestore",
+    "dev": "npm start"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "autoprefixer": "^10.4.14",
+    "concurrently": "^9.2.1",
+    "firebase-tools": "^14.18.0",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7"
+  }
+}

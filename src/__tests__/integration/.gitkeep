@@ -1,0 +1,16 @@
+# Integration Tests
+
+This directory contains integration tests for user workflows and component interactions.
+
+## Examples of integration tests to add:
+
+- User authentication flow
+- Garden creation and management workflow
+- Plant library search and selection
+- Task creation and scheduling
+- Profile management flow
+- Context provider integration
+
+## Naming convention:
+- `FeatureName.integration.test.js` for feature workflows
+- `WorkflowName.test.js` for user journey tests

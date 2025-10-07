@@ -1,0 +1,16 @@
+# Unit Tests
+
+This directory contains unit tests for individual components and utility functions.
+
+## Examples of unit tests to add:
+
+- Component rendering tests
+- Component prop handling
+- Utility function tests
+- Hook tests
+- Service function tests
+
+## Naming convention:
+- `ComponentName.test.js` for React components
+- `utilityName.test.js` for utility functions
+- `hookName.test.js` for custom hooks
