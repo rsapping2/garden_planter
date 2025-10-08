@@ -135,6 +135,7 @@ class NotificationScheduler {
 }
 
 // Export singleton instance
-export default new NotificationScheduler();
+const notificationScheduler = new NotificationScheduler();
+export default notificationScheduler;
 
 
