@@ -15,6 +15,34 @@ import { getUSDAZone } from '../utils/usdaZones';
 
 const AuthContext = createContext();
 
+// Helper function to translate Firebase error codes to user-friendly messages
+const getFirebaseErrorMessage = (errorCode) => {
+  switch (errorCode) {
+    case 'auth/invalid-credential':
+      return 'Wrong email or password. Please try again.';
+    case 'auth/user-not-found':
+      return 'No account found with this email address.';
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please choose a stronger password.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled. Please contact support.';
+    case 'auth/operation-not-allowed':
+      return 'This sign-in method is not enabled. Please contact support.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection and try again.';
+    default:
+      return 'An error occurred. Please try again.';
+  }
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -89,7 +117,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Firebase login error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -134,7 +162,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user };
     } catch (error) {
       console.error('Firebase signup error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -145,7 +173,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Firebase logout error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -170,7 +198,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Firebase profile update error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -193,7 +221,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Firebase email update error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -209,7 +237,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Firebase email verification error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
@@ -219,7 +247,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, message: 'Password reset email sent successfully' };
     } catch (error) {
       console.error('Firebase password reset error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
