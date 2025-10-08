@@ -1,6 +1,6 @@
 {
-  "short_name": "Garden Planter",
-  "name": "Garden Planter - Plan Your Perfect Garden",
+  "short_name": "Garden Planner",
+  "name": "Garden Planner - Plan and Track Your Garden",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,7 +10,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#22c55e",
+  "theme_color": "#000000",
   "background_color": "#ffffff"
 }
-

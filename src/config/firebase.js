@@ -14,30 +14,45 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
-// Validate required Firebase configuration
-const requiredEnvVars = [
-  'REACT_APP_FIREBASE_API_KEY',
-  'REACT_APP_FIREBASE_AUTH_DOMAIN', 
-  'REACT_APP_FIREBASE_PROJECT_ID',
-  'REACT_APP_FIREBASE_APP_ID'
-];
+// Check if we should use localStorage instead of Firebase
+const USE_LOCALSTORAGE = process.env.REACT_APP_USE_LOCALSTORAGE === 'true';
 
-const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-if (missingVars.length > 0) {
-  console.error('Missing required Firebase environment variables:', missingVars);
-  console.error('Please copy env.development.example to .env.local and update the values');
+let app, auth, db;
+
+if (!USE_LOCALSTORAGE) {
+  // Validate required Firebase configuration
+  const requiredEnvVars = [
+    'REACT_APP_FIREBASE_API_KEY',
+    'REACT_APP_FIREBASE_AUTH_DOMAIN', 
+    'REACT_APP_FIREBASE_PROJECT_ID',
+    'REACT_APP_FIREBASE_APP_ID'
+  ];
+
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  if (missingVars.length > 0) {
+    console.error('Missing required Firebase environment variables:', missingVars);
+    console.error('Please copy env.development.example to .env.local and update the values');
+  }
+
+  // Initialize Firebase
+  app = initializeApp(firebaseConfig);
+
+  // Initialize Firebase services
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  console.log('🔄 Using localStorage mode - Firebase initialization skipped');
+  // Create mock objects to prevent import errors
+  app = null;
+  auth = null;
+  db = null;
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export { auth, db };
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-// Initialize Analytics (only in production)
+// Initialize Analytics (only in production and when not using localStorage)
 let analytics = null;
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' && !USE_LOCALSTORAGE && app) {
   try {
     analytics = getAnalytics(app);
   } catch (error) {
@@ -46,8 +61,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 export { analytics };
 
-// Connect to emulators in development (only if explicitly enabled)
-if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATORS === 'true') {
+// Connect to emulators in development (only if explicitly enabled and not using localStorage)
+if (!USE_LOCALSTORAGE && process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATORS === 'true' && auth && db) {
   // Connect to emulators (only once per session)
   try {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
@@ -62,7 +77,7 @@ if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATOR
   } catch (error) {
     console.log('Firestore emulator connection skipped:', error.message);
   }
-} else if (process.env.NODE_ENV === 'development') {
+} else if (!USE_LOCALSTORAGE && process.env.NODE_ENV === 'development') {
   console.log('🔥 Firebase running in development mode without emulators');
 }
 
