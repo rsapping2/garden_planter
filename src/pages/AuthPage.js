@@ -16,8 +16,10 @@ const AuthPage = () => {
   const [usdaZone, setUsdaZone] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [pendingUser, setPendingUser] = useState(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
   
-  const { login, signup, user } = useAuth();
+  const { login, signup, user, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +73,31 @@ const AuthPage = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!formData.email) {
+      setErrors({ email: 'Please enter your email address' });
+      return;
+    }
+
+    setLoading(true);
+    setErrors({});
+    
+    try {
+      const result = await resetPassword(formData.email);
+      if (result.success) {
+        setResetMessage(result.message);
+        setShowForgotPassword(false);
+      } else {
+        setErrors({ email: result.error });
+      }
+    } catch (error) {
+      setErrors({ email: 'Failed to send reset email. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -268,9 +295,19 @@ const AuthPage = () => {
 
             {isLogin && (
               <div className="text-center">
-                <Link to="/" className="text-sm text-primary-600 hover:text-primary-500">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-primary-600 hover:text-primary-500 underline"
+                >
                   Forgot your password?
-                </Link>
+                </button>
+              </div>
+            )}
+
+            {resetMessage && (
+              <div className="text-center p-3 bg-green-100 text-green-700 rounded-md text-sm">
+                {resetMessage}
               </div>
             )}
           </form>
@@ -319,6 +356,59 @@ const AuthPage = () => {
             </Link>
           </p>
         </div>
+
+        {/* Forgot Password Modal */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Reset Password</h3>
+              <p className="text-gray-600 mb-4">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              
+              <form onSubmit={handleForgotPassword}>
+                <div className="mb-4">
+                  <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="reset-email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter your email"
+                    required
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setErrors({});
+                      setResetMessage('');
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 btn-primary disabled:opacity-50"
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Email'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
