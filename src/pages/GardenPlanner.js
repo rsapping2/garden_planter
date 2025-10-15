@@ -100,7 +100,7 @@ const GardenPlanner = () => {
     movePlantInGarden(currentGarden.id, plantedItem, { x, y });
   };
 
-  const handleEmptySlotClick = (x, y) => {
+  const handleEmptySlotClick = () => {
     // For now, we'll just show an alert. In a full implementation, 
     // this would open a plant selection modal
     alert(`Empty slot. Drag a plant from the sidebar to add it here!`);
