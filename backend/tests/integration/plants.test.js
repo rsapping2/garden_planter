@@ -9,7 +9,7 @@ const createTestApp = () => {
   app.use('/api/plants', plantsRoutes);
   
   // Error handling middleware
-  app.use((err, req, res, _next) => {
+  app.use((err, req, res) => {
     res.status(err.status || 500).json({
       error: err.message || 'Internal server error'
     });

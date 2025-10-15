@@ -1,17 +1,36 @@
-# 🌱 Garden Planner
+# Garden Planner
 
-A comprehensive garden planning application with interactive layouts, task scheduling, and plant management.
+A modern **React + Firebase** garden planning tool that helps you design, schedule, and track plant growth. Whether you’re a home gardener, hobbyist, or community organizer, Garden Planner makes it easy to bring your garden to life.
 
-## ✨ Features
+---
 
-- **Interactive Garden Layout**: Drag and drop plants to design your garden
-- **Task Scheduling**: Create and manage planting, watering, and harvest tasks
-- **Plant Database**: Browse 30+ plants with growing information
-- **USDA Zone Support**: Automatic zone detection and recommendations
-- **Local Storage**: Your designs persist between sessions
-- **Mock Notifications**: Preview notification system
+## Live Demo
+--> [garden-planter.pages.dev](https://garden-planter.pages.dev) 
 
-## 🚀 Quick Start
+---
+
+## Features
+- **Interactive Garden Layout** – Drag and drop plants to design your garden
+- **Task Scheduling** – Plan and track planting, watering, and harvest tasks
+- **Plant Database** – Browse 30+ plants with detailed growing information
+- **USDA Zone Detection** – Automatic hardiness zone and planting recommendations
+- **Cloud Storage Support** – Save your garden designs between sessions
+- **Notification Preview** – Simulated reminders for upcoming tasks
+
+---
+
+## Tech Stack
+
+**Frontend:** React, Context API, TailwindCSS  
+**Backend:** Firebase (Auth, Firestore, Hosting) with Local Emulators  
+**CI/CD:** GitHub Actions  
+**Hosting:** Cloudflare Pages  
+**Testing:** Jest (Unit & integration) + Playwright (UI & Automation)
+**Package Management:** npm  
+
+--
+
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -22,7 +41,7 @@ A comprehensive garden planning application with interactive layouts, task sched
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone git@github.com:rsapping2/garden_planter.git
 cd garden_planter
 
 # Install dependencies
@@ -42,9 +61,6 @@ cp env.development.example .env.local
 # Start with Firebase emulators (recommended - simulates production)
 npm start
 
-# Or start with localStorage only (faster startup)
-npm run start:local
-
 # Or start components separately:
 npm run emulators        # Firebase emulators only
 npm run start:frontend   # React app only
@@ -56,17 +72,11 @@ The app will be available at:
 
 ### Development Modes
 
-#### Firebase Emulators (Default)
+#### Firebase Emulators
 - **Command**: `npm start`
 - **Ports**: Frontend (3000), Auth (9099), Firestore (8080), Firebase UI (4000)
 - **Benefits**: Simulates production environment, persistent data, real Firebase features
 - **Use when**: Testing Firebase features, preparing for production
-
-#### localStorage Mode  
-- **Command**: `npm run start:local`
-- **Ports**: Frontend (3000) only
-- **Benefits**: Faster startup, no dependencies, works offline
-- **Use when**: Quick development, working on UI only
 
 ### Testing
 
@@ -86,24 +96,28 @@ npm run test:integration    # Integration tests only
 npm run build
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 garden_planter/
-├── src/                    # Frontend React application
-│   ├── components/         # Reusable React components
-│   ├── pages/             # Page components
-│   ├── contexts/          # React Context providers
-│   ├── services/          # API and external services
-│   ├── utils/             # Utility functions
-│   └── __tests__/         # Frontend tests
-├── backend/               # Node.js backend (for future use)
-├── tests/                 # E2E and smoke tests (Playwright)
-├── public/                # Static assets
-└── docs/                  # Documentation
+├── src/                           # Frontend React application
+│   ├── components/                # Reusable React components (modals, grid, cards)
+│   ├── pages/                     # Page components (Dashboard, PlantLibrary, etc.)
+│   ├── contexts/                  # React Context providers (Auth, Garden)
+│   ├── services/                  # External services (email, notifications, plants)
+│   ├── utils/                     # Utility functions (dates, USDA zones)
+│   ├── data/                      # Static data (plant information)
+│   ├── config/                    # Configuration (Firebase, environment)
+│   ├── __tests__/                 # Frontend unit and integration tests
+├── backend/                       # Backend tests and API (Node.js)
+├── tests/                         # E2E, smoke, and UI tests (Playwright)
+├── public/                        # Static assets (HTML, favicon, manifest)
+├── firebase.json                  # Firebase configuration
+├── tailwind.config.js             # TailwindCSS configuration
+└── package.json                   # Frontend dependencies and scripts
 ```
 
-## 🔧 Environment Variables
+## Environment Variables
 
 Copy `env.development.example` to `.env.local` and customize:
 
@@ -115,12 +129,9 @@ REACT_APP_FIREBASE_PROJECT_ID=demo-project
 # Development mode
 REACT_APP_USE_EMULATORS=true
 REACT_APP_ENV=development
-
-# Force localStorage mode (optional)
-# REACT_APP_USE_LOCALSTORAGE=true
 ```
 
-## 📚 Documentation
+## Documentation
 
 ### Local Development
 - This README - Local development setup and daily workflow
@@ -134,7 +145,7 @@ REACT_APP_ENV=development
 - **[Email Setup](docs/EMAIL_SETUP.md)** - Configure email notifications
 - **[GitHub CI/CD](docs/GITHUB_CI_SETUP.md)** - Automated testing and deployment
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
@@ -142,10 +153,6 @@ REACT_APP_ENV=development
 4. Run tests: `npm test`
 5. Submit a pull request
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
-
----
-
-**Need help with deployment?** Check the [docs/](docs/) folder for detailed deployment guides.
