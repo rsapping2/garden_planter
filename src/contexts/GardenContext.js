@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import plantService from '../services/plantService';
+import { debugLog, errorLog } from '../utils/debugLogger';
 
 const GardenContext = createContext();
 
@@ -28,15 +29,15 @@ export const GardenProvider = ({ children }) => {
       const gardensKey = `garden_planner_gardens_${user.id}`;
       const tasksKey = `garden_planner_tasks_${user.id}`;
       
-      console.log('Loading data for user:', user.id);
-      console.log('Looking for gardens key:', gardensKey);
-      console.log('Looking for tasks key:', tasksKey);
+      debugLog('Loading data for user:', user.id);
+      debugLog('Looking for gardens key:', gardensKey);
+      debugLog('Looking for tasks key:', tasksKey);
       
       const savedGardens = localStorage.getItem(gardensKey);
       const savedTasks = localStorage.getItem(tasksKey);
       
-      console.log('Found saved gardens:', !!savedGardens);
-      console.log('Found saved tasks:', !!savedTasks);
+      debugLog('Found saved gardens:', !!savedGardens);
+      debugLog('Found saved tasks:', !!savedTasks);
       
       let userGardens = [];
       let userTasks = [];
@@ -47,7 +48,7 @@ export const GardenProvider = ({ children }) => {
       // Load gardens - check saved data first, then fallback to mock data
       if (savedGardens) {
         userGardens = JSON.parse(savedGardens);
-        console.log('Loaded saved gardens:', userGardens);
+        debugLog('Loaded saved gardens:', userGardens);
       } else {
         // Load mock garden data only if no saved data exists
         const mockGardens = [
@@ -121,7 +122,7 @@ export const GardenProvider = ({ children }) => {
       // Load tasks - check saved data first, then fallback to mock data
       if (savedTasks) {
         userTasks = JSON.parse(savedTasks);
-        console.log('Loaded saved tasks:', userTasks);
+        debugLog('Loaded saved tasks:', userTasks);
       } else {
         userTasks = mockTasks;
       }
@@ -130,7 +131,7 @@ export const GardenProvider = ({ children }) => {
       setPlants(plantsData);
       setTasks(userTasks);
     } catch (error) {
-      console.error('Error loading user data:', error);
+      errorLog('Error loading user data:', error);
     } finally {
       setLoading(false);
     }
@@ -147,7 +148,7 @@ export const GardenProvider = ({ children }) => {
     if (user) {
       localStorage.setItem(`garden_planner_gardens_${user.id}`, JSON.stringify(gardens));
       localStorage.setItem(`garden_planner_tasks_${user.id}`, JSON.stringify(tasks));
-      console.log('Saved to localStorage:', { gardens: gardens.length, tasks: tasks.length });
+      debugLog('Saved to localStorage:', { gardens: gardens.length, tasks: tasks.length });
     }
   };
 
@@ -177,15 +178,15 @@ export const GardenProvider = ({ children }) => {
   };
 
   const updateGardenLayout = (gardenId, layout) => {
-    console.log('Updating garden layout for garden:', gardenId);
-    console.log('New layout:', layout);
+    debugLog('Updating garden layout for garden:', gardenId);
+    debugLog('New layout:', layout);
     
     const updatedGardens = gardens.map(garden => 
       garden.id === gardenId 
         ? { ...garden, layout }
         : garden
     );
-    console.log('Updated gardens state:', updatedGardens);
+    debugLog('Updated gardens state:', updatedGardens);
     setGardens(updatedGardens);
     saveToLocalStorage(updatedGardens, tasks);
   };
@@ -203,15 +204,15 @@ export const GardenProvider = ({ children }) => {
       customData: {} // Future: store custom notes and data per square
     };
 
-    console.log('Adding plant:', newPlant);
-    console.log('Current plants in garden:', garden.layout.plants);
+    debugLog('Adding plant:', newPlant);
+    debugLog('Current plants in garden:', garden.layout.plants);
 
     const updatedLayout = {
       ...garden.layout,
       plants: [...garden.layout.plants, newPlant]
     };
 
-    console.log('Updated plants:', updatedLayout.plants);
+    debugLog('Updated plants:', updatedLayout.plants);
     updateGardenLayout(gardenId, updatedLayout);
   };
 
@@ -219,7 +220,7 @@ export const GardenProvider = ({ children }) => {
     const garden = gardens.find(g => g.id === gardenId);
     if (!garden) return;
 
-    console.log('Moving plant:', plantedItem, 'to position:', newPosition);
+    debugLog('Moving plant:', { plantedItem, position: newPosition });
 
     // Check if target position is occupied
     const targetOccupied = garden.layout.plants.find(
@@ -227,7 +228,7 @@ export const GardenProvider = ({ children }) => {
     );
     
     if (targetOccupied) {
-      console.log('Target position occupied, cannot move');
+      debugLog('Target position occupied, cannot move');
       return;
     }
 
@@ -240,7 +241,7 @@ export const GardenProvider = ({ children }) => {
       )
     };
 
-    console.log('Updated layout after move:', updatedLayout);
+    debugLog('Updated layout after move:', updatedLayout);
     updateGardenLayout(gardenId, updatedLayout);
   };
 

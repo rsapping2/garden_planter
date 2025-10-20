@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useGarden } from '../contexts/GardenContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { debugLog, errorLog } from '../utils/debugLogger';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -36,11 +37,11 @@ const Dashboard = () => {
           size: '3x6',
           description: `A ${newGardenName.trim()} garden`
         });
-        console.log('Created garden:', newGarden);
+        debugLog('Created garden:', newGarden);
         setNewGardenName('');
         setShowCreateGarden(false);
       } catch (error) {
-        console.error('Error creating garden:', error);
+        errorLog('Error creating garden:', error);
         alert('Failed to create garden. Please try again.');
       }
     }
@@ -50,9 +51,9 @@ const Dashboard = () => {
     if (window.confirm(`Are you sure you want to delete "${gardenName}"? This action cannot be undone.`)) {
       try {
         deleteGarden(gardenId);
-        console.log('Deleted garden:', gardenId);
+        debugLog('Deleted garden:', gardenId);
       } catch (error) {
-        console.error('Error deleting garden:', error);
+        errorLog('Error deleting garden:', error);
         alert('Failed to delete garden. Please try again.');
       }
     }

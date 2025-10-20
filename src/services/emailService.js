@@ -1,4 +1,5 @@
 import config from '../config/environment';
+import { debugLog } from '../utils/debugLogger';
 
 class EmailService {
   constructor() {
@@ -21,7 +22,7 @@ class EmailService {
           attempts: 0
         });
 
-        console.log(`[MOCK EMAIL] Verification code for ${email}: ${verificationCode}`);
+        debugLog(`[MOCK EMAIL] Verification code for ${email}: ${verificationCode}`);
         
         return {
           success: true,
@@ -150,9 +151,9 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Test notification sent to ${email}`);
-        console.log('Subject: 🌱 Garden Planner Test Notification');
-        console.log('Body: This is a test notification from Garden Planner! Your email notifications are working correctly.');
+        debugLog(`[MOCK EMAIL] Test notification sent to ${email}`);
+        debugLog('Subject: 🌱 Garden Planner Test Notification');
+        debugLog('Body: This is a test notification from Garden Planner! Your email notifications are working correctly.');
         
         return {
           success: true,
@@ -214,11 +215,11 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Task reminder sent to ${email}`);
-        console.log(`Subject: 🌱 Garden Reminder: ${task.title}`);
-        console.log(`Task: ${task.title} (${task.type})`);
-        console.log(`Due: ${task.dueDate}`);
-        console.log(`Garden: ${task.gardenName || 'Unknown'}`);
+        debugLog(`[MOCK EMAIL] Task reminder sent to ${email}`);
+        debugLog(`Subject: 🌱 Garden Reminder: ${task.title}`);
+        debugLog(`Task: ${task.title} (${task.type})`);
+        debugLog(`Due: ${task.dueDate}`);
+        debugLog(`Garden: ${task.gardenName || 'Unknown'}`);
         
         return {
           success: true,
@@ -300,10 +301,10 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Garden summary sent to ${email}`);
-        console.log(`Subject: 🌱 Your Garden Summary - ${new Date().toLocaleDateString()}`);
-        console.log(`Upcoming tasks: ${summary.upcomingTasks?.length || 0}`);
-        console.log(`Gardens: ${summary.gardens?.length || 0}`);
+        debugLog(`[MOCK EMAIL] Garden summary sent to ${email}`);
+        debugLog(`Subject: 🌱 Your Garden Summary - ${new Date().toLocaleDateString()}`);
+        debugLog(`Upcoming tasks: ${summary.upcomingTasks?.length || 0}`);
+        debugLog(`Gardens: ${summary.gardens?.length || 0}`);
         
         return {
           success: true,

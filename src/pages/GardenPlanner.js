@@ -8,6 +8,7 @@ import PlantInfoModal from '../components/PlantInfoModal';
 import PlantTaskModal from '../components/PlantTaskModal';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { debugLog } from '../utils/debugLogger';
 // Zone-specific dates are handled in PlantCard and PlantInfoModal components
 
 const GardenPlanner = () => {
@@ -54,7 +55,7 @@ const GardenPlanner = () => {
   });
 
   // Debug logging
-  console.log('Garden Planner Debug:', {
+  debugLog('Garden Planner Debug:', {
     plantsCount: plants.length,
     filteredPlantsCount: filteredPlants.length,
     searchTerm,
@@ -70,8 +71,8 @@ const GardenPlanner = () => {
     const currentGarden = gardens.find(g => g.id === selectedGarden.id);
     if (!currentGarden) return;
     
-    console.log('Plant dropped:', plant, 'at position:', x, y);
-    console.log('Current garden from context:', currentGarden);
+    debugLog('Plant dropped:', { plant, position: { x, y } });
+    debugLog('Current garden from context:', currentGarden);
     
     // Check if position is already occupied using current data
     const existingPlant = currentGarden.layout.plants.find(p => p.x === x && p.y === y);
@@ -95,7 +96,7 @@ const GardenPlanner = () => {
     const currentGarden = gardens.find(g => g.id === selectedGarden.id);
     if (!currentGarden) return;
     
-    console.log('Plant move requested:', plantedItem, 'to position:', x, y);
+    debugLog('Plant move requested:', { plantedItem, position: { x, y } });
     
     movePlantInGarden(currentGarden.id, plantedItem, { x, y });
   };

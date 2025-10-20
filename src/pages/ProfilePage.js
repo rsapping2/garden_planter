@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import EmailVerification from '../components/EmailVerification';
 import { getUSDAZone } from '../utils/usdaZones';
+import { debugLog } from '../utils/debugLogger';
 
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
@@ -95,7 +96,7 @@ const ProfilePage = () => {
 
   const handleResendEmail = async () => {
     // In a real app, this would call your backend to resend verification email
-    console.log('Resending verification email to:', pendingEmail);
+    debugLog('Resending verification email to:', pendingEmail);
   };
 
   const handleEmailChangeConfirm = () => {

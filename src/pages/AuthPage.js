@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import EmailVerification from '../components/EmailVerification';
+import { debugLog } from '../utils/debugLogger';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -143,7 +144,7 @@ const AuthPage = () => {
 
   const handleResendEmail = async () => {
     // In a real app, this would call your backend to resend verification email
-    console.log('Resending verification email to:', pendingUser?.email);
+    debugLog('Resending verification email to:', pendingUser?.email);
   };
 
   const handleInputChange = (e) => {

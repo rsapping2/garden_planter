@@ -12,6 +12,7 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { getUSDAZone } from '../utils/usdaZones';
+import { debugLog, errorLog } from '../utils/debugLogger';
 
 const AuthContext = createContext();
 
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔥 Using Firebase authentication (emulators in dev, cloud in prod)');
+    debugLog('🔥 Using Firebase authentication (emulators in dev, cloud in prod)');
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -79,7 +80,7 @@ export const AuthProvider = ({ children }) => {
           
           setUser(user);
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          errorLog('Error fetching user data:', error);
           setUser(null);
         }
       } else {
@@ -116,7 +117,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
-      console.error('Firebase login error:', error);
+      errorLog('Firebase login error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -161,7 +162,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true, user };
     } catch (error) {
-      console.error('Firebase signup error:', error);
+      errorLog('Firebase signup error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -172,7 +173,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       return { success: true };
     } catch (error) {
-      console.error('Firebase logout error:', error);
+      errorLog('Firebase logout error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -197,7 +198,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase profile update error:', error);
+      errorLog('Firebase profile update error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -220,7 +221,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase email update error:', error);
+      errorLog('Firebase email update error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -236,7 +237,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase email verification error:', error);
+      errorLog('Firebase email verification error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -246,7 +247,7 @@ export const AuthProvider = ({ children }) => {
       await sendPasswordResetEmail(auth, email);
       return { success: true, message: 'Password reset email sent successfully' };
     } catch (error) {
-      console.error('Firebase password reset error:', error);
+      errorLog('Firebase password reset error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };

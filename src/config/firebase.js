@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
+import { debugLog, errorLog, infoLog } from '../utils/debugLogger';
 
 // Firebase configuration - all values from environment variables
 const firebaseConfig = {
@@ -24,8 +25,8 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
-  console.error('Missing required Firebase environment variables:', missingVars);
-  console.error('Please copy env.development.example to .env.local and update the values');
+  errorLog('Missing required Firebase environment variables:', missingVars);
+  errorLog('Please copy env.development.example to .env.local and update the values');
 }
 
 // Initialize Firebase
@@ -41,7 +42,7 @@ if (process.env.NODE_ENV === 'production') {
   try {
     analytics = getAnalytics(app);
   } catch (error) {
-    console.log('Analytics initialization skipped:', error.message);
+    debugLog('Analytics initialization skipped:', error.message);
   }
 }
 
@@ -50,21 +51,21 @@ if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATOR
   // Connect to emulators (only once per session)
   try {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-    console.log('🔥 Connected to Firebase Auth Emulator');
+    infoLog('🔥 Connected to Firebase Auth Emulator');
   } catch (error) {
-    console.log('Auth emulator connection skipped:', error.message);
+    debugLog('Auth emulator connection skipped:', error.message);
   }
   
   try {
     connectFirestoreEmulator(db, 'localhost', 8080);
-    console.log('🔥 Connected to Firestore Emulator');
+    infoLog('🔥 Connected to Firestore Emulator');
   } catch (error) {
-    console.log('Firestore emulator connection skipped:', error.message);
+    debugLog('Firestore emulator connection skipped:', error.message);
   }
 } else if (process.env.NODE_ENV === 'development') {
-  console.log('🔥 Firebase running in development mode without emulators');
+  infoLog('🔥 Firebase running in development mode without emulators');
 } else {
-  console.log('🔥 Firebase running in production mode');
+  infoLog('🔥 Firebase running in production mode');
 }
 
 export { auth, db, analytics };

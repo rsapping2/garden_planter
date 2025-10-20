@@ -1,4 +1,5 @@
 import emailService from './emailService';
+import { debugLog } from '../utils/debugLogger';
 
 /**
  * Notification Scheduler - Handles automatic garden task reminders
@@ -18,7 +19,7 @@ class NotificationScheduler {
    */
   async scheduleTaskReminders(user, tasks) {
     if (!user?.emailNotifications || !user?.email) {
-      console.log('Email notifications disabled or no email address');
+      debugLog('Email notifications disabled or no email address');
       return;
     }
 
@@ -31,7 +32,7 @@ class NotificationScheduler {
       return daysDiff === 1 && !task.completed;
     });
 
-    console.log(`Scheduling ${upcomingTasks.length} task reminders for ${user.email}`);
+    debugLog(`Scheduling ${upcomingTasks.length} task reminders for ${user.email}`);
 
     for (const task of upcomingTasks) {
       try {
@@ -40,7 +41,7 @@ class NotificationScheduler {
         const result = await emailService.sendTaskReminder(user.email, task);
         
         if (result.success) {
-          console.log(`✅ Task reminder scheduled for: ${task.title}`);
+          debugLog(`✅ Task reminder scheduled for: ${task.title}`);
         } else {
           console.error(`❌ Failed to schedule reminder for: ${task.title}`);
         }
@@ -64,7 +65,7 @@ class NotificationScheduler {
       const result = await emailService.sendGardenSummary(user.email, summary);
       
       if (result.success) {
-        console.log(`✅ Daily summary sent to ${user.email}`);
+        debugLog(`✅ Daily summary sent to ${user.email}`);
       } else {
         console.error(`❌ Failed to send daily summary to ${user.email}`);
       }
@@ -108,7 +109,7 @@ class NotificationScheduler {
    * In production, this would be handled by the backend
    */
   startDemoScheduler(user, tasks) {
-    console.log('🔄 Starting demo notification scheduler...');
+    debugLog('🔄 Starting demo notification scheduler...');
     
     // Check for reminders every minute (for demo purposes)
     const interval = setInterval(async () => {
@@ -129,7 +130,7 @@ class NotificationScheduler {
     if (interval) {
       clearInterval(interval);
       this.scheduledNotifications.delete(userId);
-      console.log('⏹️ Demo notification scheduler stopped');
+      debugLog('⏹️ Demo notification scheduler stopped');
     }
   }
 }
