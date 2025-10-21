@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useGarden } from '../contexts/GardenContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { getTodayLocalDateString } from '../utils/dateUtils';
 
 const PlantTaskModal = ({ isOpen, onClose, plantedItem, plantData, gardenId, gardenName }) => {
   const { addTask } = useGarden();
   const { user } = useAuth();
+  const { showError, showSuccess } = useToast();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -35,6 +37,7 @@ const PlantTaskModal = ({ isOpen, onClose, plantedItem, plantData, gardenId, gar
       };
 
       addTask(taskData);
+      showSuccess('Task added successfully!');
       
       // Reset form
       setFormData({
@@ -47,7 +50,7 @@ const PlantTaskModal = ({ isOpen, onClose, plantedItem, plantData, gardenId, gar
       onClose();
     } catch (error) {
       console.error('Error adding task:', error);
-      alert('Failed to add task. Please try again.');
+      showError('Failed to add task. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

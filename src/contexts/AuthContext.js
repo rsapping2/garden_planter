@@ -71,7 +71,8 @@ export const AuthProvider = ({ children }) => {
             id: firebaseUser.uid,
             email: firebaseUser.email,
             name: userData.name || firebaseUser.displayName || 'User',
-            emailVerified: firebaseUser.emailVerified,
+            // Use Firestore emailVerified status as source of truth, fallback to Firebase Auth
+            emailVerified: userData.emailVerified !== undefined ? userData.emailVerified : firebaseUser.emailVerified,
             zipCode: userData.zipCode || '',
             usdaZone: userData.usdaZone || '',
             emailNotifications: userData.emailNotifications !== false,
@@ -242,6 +243,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const markEmailAsVerified = async () => {
+    try {
+      if (!user || !auth.currentUser) {
+        return { success: false, error: 'No user logged in' };
+      }
+
+      // Update email verification status in Firestore
+      await updateDoc(doc(db, 'users', user.id), { 
+        emailVerified: true,
+        emailVerifiedAt: new Date().toISOString()
+      });
+
+      // Update local user state
+      const updatedUser = { ...user, emailVerified: true };
+      setUser(updatedUser);
+      
+      debugLog('Email marked as verified in Firestore');
+      return { success: true };
+    } catch (error) {
+      errorLog('Error marking email as verified:', error);
+      return { success: false, error: 'Failed to update email verification status' };
+    }
+  };
+
   const resetPassword = async (email) => {
     try {
       await sendPasswordResetEmail(auth, email);
@@ -249,6 +274,39 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       errorLog('Firebase password reset error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      if (!auth.currentUser) {
+        return { success: false, error: 'No user logged in' };
+      }
+
+      // Reload the user to get the latest email verification status
+      await auth.currentUser.reload();
+      
+      // Get the updated user data
+      const firebaseUser = auth.currentUser;
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      
+      const updatedUser = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: userData.name || firebaseUser.displayName || 'User',
+        emailVerified: firebaseUser.emailVerified,
+        zipCode: userData.zipCode || '',
+        usdaZone: userData.usdaZone || '',
+        emailNotifications: userData.emailNotifications !== false,
+        webPushNotifications: userData.webPushNotifications !== false
+      };
+      
+      setUser(updatedUser);
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      errorLog('Error refreshing user:', error);
+      return { success: false, error: 'Failed to refresh user data' };
     }
   };
 
@@ -261,7 +319,9 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     updateEmail,
     verifyEmail,
-    resetPassword
+    markEmailAsVerified,
+    resetPassword,
+    refreshUser
   };
 
   return (

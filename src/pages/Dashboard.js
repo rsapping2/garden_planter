@@ -2,16 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGarden } from '../contexts/GardenContext';
+import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { debugLog, errorLog } from '../utils/debugLogger';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { gardens, getUpcomingTasks, loading, createGarden, deleteGarden } = useGarden();
+  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
   const [showCreateGarden, setShowCreateGarden] = useState(false);
   const [newGardenName, setNewGardenName] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [gardenToDelete, setGardenToDelete] = useState(null);
 
   const upcomingTasks = getUpcomingTasks();
 
@@ -26,7 +31,7 @@ const Dashboard = () => {
     
     // Check garden limit
     if (gardens.length >= 2) {
-      alert('You can only have up to 2 gardens. Please delete an existing garden to create a new one.');
+      showError('You can only have up to 2 gardens. Please delete an existing garden to create a new one.');
       return;
     }
     
@@ -38,25 +43,34 @@ const Dashboard = () => {
           description: `A ${newGardenName.trim()} garden`
         });
         debugLog('Created garden:', newGarden);
+        showSuccess(`Garden "${newGardenName.trim()}" created successfully!`);
         setNewGardenName('');
         setShowCreateGarden(false);
       } catch (error) {
         errorLog('Error creating garden:', error);
-        alert('Failed to create garden. Please try again.');
+        showError('Failed to create garden. Please try again.');
       }
     }
   };
 
   const handleDeleteGarden = (gardenId, gardenName) => {
-    if (window.confirm(`Are you sure you want to delete "${gardenName}"? This action cannot be undone.`)) {
+    setGardenToDelete({ id: gardenId, name: gardenName });
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteGarden = () => {
+    if (gardenToDelete) {
       try {
-        deleteGarden(gardenId);
-        debugLog('Deleted garden:', gardenId);
+        deleteGarden(gardenToDelete.id);
+        showSuccess(`Garden "${gardenToDelete.name}" deleted successfully!`);
+        debugLog('Deleted garden:', gardenToDelete.id);
       } catch (error) {
         errorLog('Error deleting garden:', error);
-        alert('Failed to delete garden. Please try again.');
+        showError('Failed to delete garden. Please try again.');
       }
     }
+    setShowDeleteConfirm(false);
+    setGardenToDelete(null);
   };
 
   const determineUSDAZone = (zipCode) => {
@@ -371,6 +385,18 @@ const Dashboard = () => {
       </div>
       
       <Footer />
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteGarden}
+        title="Delete Garden"
+        message={`Are you sure you want to delete "${gardenToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </div>
   );
 };

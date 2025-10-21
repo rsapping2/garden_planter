@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import config from '../config/environment';
 import emailService from '../services/emailService';
 import Header from '../components/Header';
@@ -8,6 +9,7 @@ import Footer from '../components/Footer';
 
 const NotificationsPage = () => {
   const { user, updateUser } = useAuth();
+  const { showError, showSuccess, showWarning } = useToast();
   const navigate = useNavigate();
   
   const [notificationSettings, setNotificationSettings] = useState({
@@ -191,20 +193,20 @@ const NotificationsPage = () => {
   const testNotification = async () => {
     // Check if user email is verified
     if (!user?.emailVerified) {
-      alert('🔒 Email verification required!\n\nYou must verify your email address before testing notifications.\n\nPlease check your email for a verification link or go to your Profile to resend verification.');
+      showError('Email verification required! You must verify your email address before testing notifications. Please check your email for a verification link or go to your Profile to resend verification.');
       return;
     }
 
     // Check rate limiting (1 minute cooldown)
     if (isNotificationCooldown) {
       const timeRemaining = Math.ceil((60000 - (Date.now() - lastNotificationTime)) / 1000);
-      alert(`⏱️ Please wait ${timeRemaining} seconds before testing notifications again.\n\nThis helps prevent spam and ensures proper functionality.`);
+      showWarning(`Please wait ${timeRemaining} seconds before testing notifications again. This helps prevent spam and ensures proper functionality.`);
       return;
     }
 
     // Check if notifications are supported
     if (!('Notification' in window)) {
-      alert('This browser does not support notifications');
+      showError('This browser does not support notifications');
       return;
     }
 
@@ -248,24 +250,32 @@ const NotificationsPage = () => {
           }
         }
         
-        // Show success message with both results
-        const browserSuccess = '✅ Browser notification sent!';
-        const emailStatus = notificationSettings.email 
-          ? (emailResult.success 
-              ? '✅ Email notification sent! (Check console for mock email)'
-              : '❌ Email notification failed')
-          : '⚠️ Email notifications disabled';
+        // Show success message with both results as a single numbered list
+        const messages = [
+          'Browser notification sent!',
+          notificationSettings.email 
+            ? (emailResult.success 
+                ? ' Email notification sent! (Check console for mock email in development)'
+                : ' Email notification failed')
+            : 'Email notifications disabled',
+          'Note: You can test notifications again in 1 minute.'
+        ];
         
-        alert(`${browserSuccess}\n${emailStatus}\n\nNote: You can test notifications again in 1 minute.`);
+        // Create a single toast with numbered list
+        const numberedMessage = messages.map((message, index) => 
+          `${index + 1}) ${message}`
+        ).join('\n');
+        
+        showSuccess(numberedMessage, { showIcon: false });
         
       } catch (error) {
         console.error('Error creating notification:', error);
-        alert('❌ Failed to create notification. Please check your browser settings.');
+        showError('Failed to create notification. Please check your browser settings.');
       }
     } else if (permission === 'denied') {
-      alert('❌ Notifications are blocked. Please enable them in your browser settings:\n\n1. Click the lock icon in your address bar\n2. Allow notifications for this site\n3. Refresh the page and try again');
+      showError('Notifications are blocked. Please enable them in your browser settings: 1. Click the lock icon in your address bar 2. Allow notifications for this site 3. Refresh the page and try again');
     } else {
-      alert('❌ Notification permission denied. Please try again or check your browser settings.');
+      showError('Notification permission denied. Please try again or check your browser settings.');
     }
   };
 
@@ -417,7 +427,7 @@ const NotificationsPage = () => {
                     onClick={() => {
                       setShowSettings(false);
                       // Show a brief confirmation
-                      alert('✅ Notification settings saved successfully!');
+                      showSuccess('Notification settings saved successfully!');
                     }}
                     className="btn-primary"
                   >

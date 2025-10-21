@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useGarden } from '../contexts/GardenContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import PlantCard from '../components/PlantCard';
 import GardenGrid from '../components/GardenGrid';
 import PlantInfoModal from '../components/PlantInfoModal';
@@ -16,6 +17,7 @@ const GardenPlanner = () => {
   const gardenId = searchParams.get('garden');
   const { gardens, plants, addPlantToGarden, movePlantInGarden, removePlantFromGarden, getPlantById } = useGarden();
   const { user } = useAuth();
+  const { showError, showInfo } = useToast();
   const navigate = useNavigate();
   
   const [selectedGarden, setSelectedGarden] = useState(null);
@@ -77,7 +79,7 @@ const GardenPlanner = () => {
     // Check if position is already occupied using current data
     const existingPlant = currentGarden.layout.plants.find(p => p.x === x && p.y === y);
     if (existingPlant) {
-      alert('This position is already occupied!');
+      showError('This position is already occupied!');
       return;
     }
 
@@ -102,9 +104,9 @@ const GardenPlanner = () => {
   };
 
   const handleEmptySlotClick = () => {
-    // For now, we'll just show an alert. In a full implementation, 
+    // For now, we'll just show an info message. In a full implementation, 
     // this would open a plant selection modal
-    alert(`Empty slot. Drag a plant from the sidebar to add it here!`);
+    showInfo('Empty slot. Drag a plant from the sidebar to add it here!');
   };
 
   const handleRemovePlant = (plant) => {
