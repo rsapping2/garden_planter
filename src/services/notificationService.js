@@ -1,7 +1,7 @@
 import { 
   collection, 
   doc, 
-  getDocs, 
+  getDocsFromServer,
   addDoc, 
   updateDoc, 
   deleteDoc, 
@@ -46,8 +46,9 @@ class NotificationService {
         limit(options.limit || 50)
       );
       
-      debugLog('Executing Firestore query...');
-      const querySnapshot = await getDocs(q);
+      debugLog('Executing Firestore query (bypassing cache)...');
+      // Use getDocsFromServer to bypass cache and always get fresh data from Firestore
+      const querySnapshot = await getDocsFromServer(q);
       const notifications = [];
       
       querySnapshot.forEach((doc) => {

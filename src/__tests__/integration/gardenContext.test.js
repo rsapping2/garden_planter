@@ -131,7 +131,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
             size: '3x6',
             description: 'Test garden'
           });
-          fail('Should have thrown an error');
+          throw new Error('Should have thrown an error');
         } catch (error) {
           expect(error.message).toContain('minimum 2');
         }
@@ -152,7 +152,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
             size: '3x6',
             description: 'Test garden'
           });
-          fail('Should have thrown an error');
+          throw new Error('Should have thrown an error');
         } catch (error) {
           expect(error.message).toContain('maximum 50');
         }
@@ -235,7 +235,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
             gardenName: 'Test Garden',
             notes: ''
           });
-          fail('Should have thrown an error');
+          throw new Error('Should have thrown an error');
         } catch (error) {
           expect(error.message).toContain('minimum 2');
         }
@@ -259,7 +259,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
             gardenName: 'Test Garden',
             notes: ''
           });
-          fail('Should have thrown an error');
+          throw new Error('Should have thrown an error');
         } catch (error) {
           expect(error.message).toContain('maximum 100');
         }
@@ -283,7 +283,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
             gardenName: 'Test Garden',
             notes: 'A'.repeat(501) // Too long
           });
-          fail('Should have thrown an error');
+          throw new Error('Should have thrown an error');
         } catch (error) {
           expect(error.message).toContain('maximum 500');
         }

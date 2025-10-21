@@ -31,6 +31,7 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true);
 
   const settingsInitialized = useRef(false);
+  const userIdRef = useRef(null);
   const [showSettings, setShowSettings] = useState(false);
   const [lastNotificationTime, setLastNotificationTime] = useState(null);
   const [isNotificationCooldown, setIsNotificationCooldown] = useState(false);
@@ -52,10 +53,20 @@ const NotificationsPage = () => {
     const loadNotifications = async () => {
       if (!user?.id) {
         console.log('No user ID available, skipping notification load');
+        setNotifications([]);
+        setLoading(false);
+        userIdRef.current = null;
+        return;
+      }
+      
+      // Only reload if user ID actually changed (not just the user object reference)
+      if (userIdRef.current === user.id) {
+        console.log('User ID unchanged, skipping reload to prevent duplicate data');
         return;
       }
       
       console.log('Loading notifications for user:', user.id);
+      userIdRef.current = user.id;
       
       // Always use Firestore - no localStorage fallback
       
@@ -77,6 +88,7 @@ const NotificationsPage = () => {
         console.log('📋 Notification details:', userNotifications.map(n => ({ 
           id: n.id, 
           title: n.title, 
+          read: n.read,
           timestamp: n.timestamp,
           type: n.type 
         })));

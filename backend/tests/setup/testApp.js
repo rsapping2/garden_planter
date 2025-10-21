@@ -26,6 +26,7 @@ const createTestApp = ({ routePath, routes, middleware = [] } = {}) => {
   }
   
   // Error handling middleware
+  // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     console.error('Test error:', err);
     res.status(err.status || 500).json({
@@ -85,6 +86,7 @@ const createMultiRouteTestApp = (routeGroups) => {
   });
   
   // Error handling middleware
+  // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
     console.error('Test error:', err);
     res.status(err.status || 500).json({

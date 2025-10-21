@@ -1,6 +1,6 @@
 const request = require('supertest');
 const { createPlantsTestApp } = require('../setup/testApp');
-const { testPlants, assertions, constants } = require('../setup/testUtils');
+const { assertions, constants } = require('../setup/testUtils');
 
 describe('Plants Routes', () => {
   let app;
