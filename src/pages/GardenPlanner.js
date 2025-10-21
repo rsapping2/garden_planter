@@ -9,6 +9,7 @@ import PlantInfoModal from '../components/PlantInfoModal';
 import PlantTaskModal from '../components/PlantTaskModal';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { withPageErrorBoundary } from '../components/PageErrorBoundary';
 import { debugLog } from '../utils/debugLogger';
 // Zone-specific dates are handled in PlantCard and PlantInfoModal components
 
@@ -182,7 +183,7 @@ const GardenPlanner = () => {
               <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
                 <p>Plants loaded: {plants.length}</p>
                 <p>Filtered plants: {filteredPlants.length}</p>
-                <p>Search: "{searchTerm}"</p>
+                <p>Search: &quot;{searchTerm}&quot;</p>
                 <p>Type filter: {filterType}</p>
                 <p>Zone filter: {filterZone}</p>
               </div>
@@ -311,4 +312,4 @@ const GardenPlanner = () => {
   );
 };
 
-export default GardenPlanner;
+export default withPageErrorBoundary(GardenPlanner);

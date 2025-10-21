@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const Toast = ({ 
   message, 
@@ -11,6 +11,14 @@ const Toast = ({
   const [isVisible, setIsVisible] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, 300); // Match animation duration
+  }, [onClose]);
+
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
@@ -18,15 +26,7 @@ const Toast = ({
       }, duration);
       return () => clearTimeout(timer);
     }
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      onClose?.();
-    }, 300); // Match animation duration
-  };
+  }, [duration, handleClose]);
 
   const getToastStyles = () => {
     const baseStyles = "fixed z-50 max-w-sm w-full mx-4 mb-4 p-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out";

@@ -4,6 +4,29 @@ import { debugLog } from '../utils/debugLogger';
 class EmailService {
   constructor() {
     this.pendingVerifications = new Map(); // Store pending verification codes
+    // Load existing verifications from localStorage
+    this.loadVerifications();
+  }
+
+  loadVerifications() {
+    try {
+      const stored = localStorage.getItem('emailVerifications');
+      if (stored) {
+        const verifications = JSON.parse(stored);
+        this.pendingVerifications = new Map(Object.entries(verifications));
+      }
+    } catch (error) {
+      console.error('Error loading verifications from localStorage:', error);
+    }
+  }
+
+  saveVerifications() {
+    try {
+      const verifications = Object.fromEntries(this.pendingVerifications);
+      localStorage.setItem('emailVerifications', JSON.stringify(verifications));
+    } catch (error) {
+      console.error('Error saving verifications to localStorage:', error);
+    }
   }
 
   /**
@@ -21,6 +44,9 @@ class EmailService {
           timestamp: Date.now(),
           attempts: 0
         });
+        
+        // Save to localStorage for persistence
+        this.saveVerifications();
 
         debugLog(`[MOCK EMAIL] Verification code for ${email}: ${verificationCode}`);
         
@@ -99,6 +125,7 @@ class EmailService {
         // Verify code
         if (stored.code === code) {
           this.pendingVerifications.delete(email);
+          this.saveVerifications(); // Save the deletion
           return {
             success: true,
             message: 'Email verified successfully!'
@@ -106,6 +133,7 @@ class EmailService {
         } else {
           // Increment attempts
           stored.attempts += 1;
+          this.saveVerifications(); // Save the updated attempts
           this.pendingVerifications.set(email, stored);
           
           return {

@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
             email: firebaseUser.email,
             name: userData.name || firebaseUser.displayName || 'User',
             // Use Firestore emailVerified status as source of truth, fallback to Firebase Auth
-            emailVerified: userData.emailVerified !== undefined ? userData.emailVerified : firebaseUser.emailVerified,
+            emailVerified: userData.emailVerified === true ? true : (userData.emailVerified === false ? false : firebaseUser.emailVerified),
             zipCode: userData.zipCode || '',
             usdaZone: userData.usdaZone || '',
             emailNotifications: userData.emailNotifications !== false,

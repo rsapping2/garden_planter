@@ -20,14 +20,16 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import { AuthProvider } from './contexts/AuthContext';
 import { GardenProvider } from './contexts/GardenContext';
 import { ToastProvider } from './contexts/ToastContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <AuthProvider>
-      <GardenProvider>
-        <ToastProvider>
-          <DndProvider backend={HTML5Backend}>
-            <Router>
+    <ErrorBoundary>
+      <AuthProvider>
+        <GardenProvider>
+          <ToastProvider>
+            <DndProvider backend={HTML5Backend}>
+              <Router>
               <div className="App">
               <Routes>
                 <Route path="/" element={<LandingPage />} />
@@ -88,11 +90,12 @@ function App() {
                 } />
               </Routes>
               </div>
-            </Router>
-          </DndProvider>
-        </ToastProvider>
-      </GardenProvider>
-    </AuthProvider>
+              </Router>
+            </DndProvider>
+          </ToastProvider>
+        </GardenProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

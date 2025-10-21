@@ -64,9 +64,11 @@ export const infoLog = (message, data = null) => {
   }
 };
 
-export default {
+const debugLogger = {
   debugLog,
   errorLog,
   warnLog,
   infoLog
 };
+
+export default debugLogger;

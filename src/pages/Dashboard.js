@@ -6,6 +6,7 @@ import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { withPageErrorBoundary } from '../components/PageErrorBoundary';
 import { debugLog, errorLog } from '../utils/debugLogger';
 
 const Dashboard = () => {
@@ -401,4 +402,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default withPageErrorBoundary(Dashboard);

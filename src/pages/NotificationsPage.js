@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -59,6 +59,7 @@ const NotificationsPage = () => {
     }
   ]);
 
+  const settingsInitialized = useRef(false);
   const [showSettings, setShowSettings] = useState(false);
   const [lastNotificationTime, setLastNotificationTime] = useState(null);
   const [isNotificationCooldown, setIsNotificationCooldown] = useState(false);
@@ -87,14 +88,15 @@ const NotificationsPage = () => {
     }
   }, [lastNotificationTime]);
 
-  // Sync local notification settings with user profile
+  // Sync local notification settings with user profile (only on initial load)
   useEffect(() => {
-    if (user) {
+    if (user && !settingsInitialized.current) {
       setNotificationSettings(prev => ({
         ...prev,
         email: user.emailNotifications !== false,
         webPush: user.webPushNotifications !== false
       }));
+      settingsInitialized.current = true;
     }
   }, [user]);
 
@@ -335,25 +337,33 @@ const NotificationsPage = () => {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-4">Delivery Methods</h3>
                 <div className="space-y-4">
-                  <label className="flex items-center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={notificationSettings.email}
+                      id="email-notifications"
+                      defaultChecked={notificationSettings.email}
                       onChange={(e) => updateSettings('email', e.target.checked)}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                     />
-                    <span className="ml-3 text-gray-700">Email notifications</span>
-                  </label>
+                    <label htmlFor="email-notifications" className="ml-3 text-gray-700 cursor-pointer">
+                      Email notifications
+                    </label>
+                  </div>
                   
-                  <label className="flex items-center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={notificationSettings.webPush}
+                      id="web-push-notifications"
+                      defaultChecked={notificationSettings.webPush}
                       onChange={(e) => updateSettings('webPush', e.target.checked)}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                     />
-                    <span className="ml-3 text-gray-700">Web push notifications</span>
-                  </label>
+                    <label htmlFor="web-push-notifications" className="ml-3 text-gray-700 cursor-pointer">
+                      Web push notifications
+                    </label>
+                  </div>
                   
                 </div>
               </div>

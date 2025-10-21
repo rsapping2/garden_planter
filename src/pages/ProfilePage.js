@@ -92,8 +92,15 @@ const ProfilePage = () => {
         setMessage('Email updated and verified successfully! Email notifications have been disabled - you can re-enable them in notification settings.');
       } else {
         // Just verifying the current email - use the new function to persist in Firestore
-        await markEmailAsVerified();
-        setMessage('Email verified successfully! You can now use all notification features.');
+        debugLog('Marking email as verified...');
+        const result = await markEmailAsVerified();
+        debugLog('markEmailAsVerified result:', result);
+        if (result.success) {
+          setMessage('Email verified successfully! You can now use all notification features.');
+        } else {
+          setMessage('Failed to update email verification status. Please try again.');
+          return;
+        }
       }
       
       setShowEmailVerification(false);
