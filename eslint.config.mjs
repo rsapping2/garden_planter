@@ -18,6 +18,12 @@ export default [
           jsx: true
         }
       }
+    },
+    rules: {
+      "no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }]
     }
   },
   {
