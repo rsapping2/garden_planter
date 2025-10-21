@@ -118,6 +118,20 @@ npm run test:watch
 npm run build
 ```
 
+### Deploying Firestore Rules
+
+**Important**: The Firestore security rules must be deployed before production use:
+
+```bash
+# Deploy Firestore rules only
+firebase deploy --only firestore:rules
+
+# Deploy everything (rules + hosting + functions)
+firebase deploy
+```
+
+See `FIRESTORE_RULES_VALIDATION.md` for details on the validation rules.
+
 ## Project Structure
 
 ```
