@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { debugLog, errorLog, infoLog } from '../utils/debugLogger';
 
 // Firebase configuration - all values from environment variables
@@ -36,6 +37,24 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Initialize App Check (only in production)
+let appCheck = null;
+if (process.env.NODE_ENV === 'production' && process.env.REACT_APP_RECAPTCHA_SITE_KEY) {
+  try {
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(process.env.REACT_APP_RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true
+    });
+    infoLog('🛡️ Firebase App Check initialized');
+  } catch (error) {
+    errorLog('App Check initialization failed:', error.message);
+  }
+} else if (process.env.NODE_ENV === 'production') {
+  errorLog('⚠️ App Check not initialized - missing REACT_APP_RECAPTCHA_SITE_KEY');
+} else {
+  debugLog('🛡️ App Check skipped in development mode');
+}
+
 // Initialize Analytics (only in production)
 let analytics = null;
 if (process.env.NODE_ENV === 'production') {
@@ -68,5 +87,5 @@ if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATOR
   infoLog('🔥 Firebase running in production mode');
 }
 
-export { auth, db, analytics };
+export { auth, db, analytics, appCheck };
 export default app;

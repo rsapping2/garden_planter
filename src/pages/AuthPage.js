@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import EmailVerification from '../components/EmailVerification';
+import FieldTooltip from '../components/FieldTooltip';
 import { debugLog } from '../utils/debugLogger';
+import { validateForm as validateFormData } from '../utils/validation';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
     zipCode: ''
   });
@@ -19,6 +22,7 @@ const AuthPage = () => {
   const [pendingUser, setPendingUser] = useState(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetMessage, setResetMessage] = useState('');
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   
   const { login, signup, user, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -46,34 +50,9 @@ const AuthPage = () => {
   }, [formData.zipCode]);
 
   const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (!isLogin) {
-      if (!formData.name) {
-        newErrors.name = 'Name is required';
-      }
-
-      if (!formData.zipCode) {
-        newErrors.zipCode = 'ZIP code is required';
-      } else if (!/^\d{5}$/.test(formData.zipCode)) {
-        newErrors.zipCode = 'ZIP code must be 5 digits';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const validation = validateFormData(formData, !isLogin);
+    setErrors(validation.errors);
+    return validation.isValid;
   };
 
   const handleForgotPassword = async (e) => {
@@ -103,6 +82,7 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setHasSubmitted(true);
     
     if (!validateForm()) {
       return;
@@ -149,13 +129,23 @@ const AuthPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
     
-    // Clear error when user starts typing
-    if (errors[name]) {
+    // Special handling for ZIP code - only allow digits
+    if (name === 'zipCode') {
+      const digitsOnly = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: digitsOnly
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing (only if form has been submitted)
+    if (hasSubmitted && errors[name]) {
       setErrors(prev => ({
         ...prev,
         [name]: ''
@@ -186,7 +176,20 @@ const AuthPage = () => {
           <p className="mt-2 text-sm text-gray-600">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                // Reset form data when switching modes
+                setFormData({
+                  email: '',
+                  password: '',
+                  confirmPassword: '',
+                  name: '',
+                  zipCode: ''
+                });
+                setErrors({});
+                setUsdaZone('');
+                setHasSubmitted(false);
+              }}
               className="font-medium text-primary-600 hover:text-primary-500"
             >
               {isLogin ? 'Sign up' : 'Sign in'}
@@ -204,9 +207,11 @@ const AuthPage = () => {
 
             {!isLogin && (
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
+                <FieldTooltip fieldType="name">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Full Name
+                  </label>
+                </FieldTooltip>
                 <input
                   id="name"
                   name="name"
@@ -223,9 +228,11 @@ const AuthPage = () => {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
+              <FieldTooltip fieldType="email">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+              </FieldTooltip>
               <input
                 id="email"
                 name="email"
@@ -241,9 +248,11 @@ const AuthPage = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
+              <FieldTooltip fieldType="password">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+              </FieldTooltip>
               <input
                 id="password"
                 name="password"
@@ -260,9 +269,34 @@ const AuthPage = () => {
 
             {!isLogin && (
               <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
-                  ZIP Code
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  Confirm Password
                 </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className={`input-field mt-1 ${errors.confirmPassword ? 'border-red-300' : ''}`}
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                )}
+                {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                  <p className="mt-1 text-sm text-green-600">✓ Passwords match</p>
+                )}
+              </div>
+            )}
+
+            {!isLogin && (
+              <div>
+                <FieldTooltip fieldType="zipCode">
+                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
+                    ZIP Code
+                  </label>
+                </FieldTooltip>
                 <input
                   id="zipCode"
                   name="zipCode"
@@ -270,8 +304,10 @@ const AuthPage = () => {
                   value={formData.zipCode}
                   onChange={handleInputChange}
                   className={`input-field mt-1 ${errors.zipCode ? 'border-red-300' : ''}`}
-                  placeholder="Enter your ZIP code"
+                  placeholder="12345"
                   maxLength="5"
+                  pattern="[0-9]{5}"
+                  inputMode="numeric"
                 />
                 {errors.zipCode && (
                   <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>

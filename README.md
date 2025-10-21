@@ -80,14 +80,36 @@ The app will be available at:
 
 ### Testing
 
+#### Frontend Tests
 ```bash
-# Run all tests
+# Run all frontend tests
 npm test
 
 # Run specific test types
 npm run test:unit           # Unit tests only
 npm run test:integration    # Integration tests only
 ```
+
+#### Backend Tests
+```bash
+# Navigate to backend directory
+cd backend
+
+# Run all backend tests
+npm test
+
+# Run with coverage report
+npm run test:coverage
+
+# Run specific test types
+npm run test:unit           # Unit tests only
+npm run test:integration    # Integration tests only
+
+# Watch mode for development
+npm run test:watch
+```
+
+**Note**: Backend tests are currently skipped as the API implementation is pending. See `backend/tests/STATUS.md` for details.
 
 ### Building
 

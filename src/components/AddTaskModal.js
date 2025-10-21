@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useGarden } from '../contexts/GardenContext';
 import { getTodayLocalDateString } from '../utils/dateUtils';
+import { validateTaskTitle, validateTaskNotes } from '../utils/validation';
+import FieldTooltip from './FieldTooltip';
 
 const AddTaskModal = ({ isOpen, onClose }) => {
   const { gardens, addTask } = useGarden();
@@ -9,18 +11,42 @@ const AddTaskModal = ({ isOpen, onClose }) => {
     type: 'watering',
     dueDate: getTodayLocalDateString(),
     gardenId: gardens.length > 0 ? gardens[0].id : '',
+    notes: '',
     // Notification options
     enableNotification: true,
     notificationTiming: '0', // same day by default
     notificationType: 'both' // 'email', 'web', or 'both'
   });
+  const [errors, setErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.title.trim()) {
+    setHasSubmitted(true);
+    
+    // Validate form data
+    const titleValidation = validateTaskTitle(formData.title);
+    const notesValidation = validateTaskNotes(formData.notes);
+    
+    const newErrors = {};
+    if (!titleValidation.isValid) {
+      newErrors.title = titleValidation.error;
+    }
+    if (!notesValidation.isValid) {
+      newErrors.notes = notesValidation.error;
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    try {
       const selectedGarden = gardens.find(g => g.id === formData.gardenId);
       const taskData = {
         ...formData,
+        title: titleValidation.sanitized,
+        notes: notesValidation.sanitized,
         gardenName: selectedGarden?.name || 'Unknown Garden'
       };
       await addTask(taskData);
@@ -29,11 +55,15 @@ const AddTaskModal = ({ isOpen, onClose }) => {
         type: 'watering',
         dueDate: getTodayLocalDateString(),
         gardenId: gardens.length > 0 ? gardens[0].id : '',
+        notes: '',
         enableNotification: true,
         notificationTiming: '0',
         notificationType: 'both'
       });
+      setErrors({});
       onClose();
+    } catch (error) {
+      console.error('Error creating task:', error);
     }
   };
 
@@ -43,6 +73,14 @@ const AddTaskModal = ({ isOpen, onClose }) => {
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing (only if form has been submitted)
+    if (hasSubmitted && errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   if (!isOpen) return null;
@@ -66,9 +104,11 @@ const AddTaskModal = ({ isOpen, onClose }) => {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Task Title
-                </label>
+                <FieldTooltip fieldType="taskTitle">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    Task Title
+                  </label>
+                </FieldTooltip>
                 <input
                   type="text"
                   name="title"
@@ -76,9 +116,15 @@ const AddTaskModal = ({ isOpen, onClose }) => {
                   value={formData.title}
                   onChange={handleInputChange}
                   placeholder="e.g., Water tomato plants"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.title ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  maxLength="100"
                   required
                 />
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                )}
               </div>
 
               <div>
@@ -138,6 +184,29 @@ const AddTaskModal = ({ isOpen, onClose }) => {
                     <option value="">No gardens available</option>
                   )}
                 </select>
+              </div>
+
+              <div>
+                <FieldTooltip fieldType="taskNotes">
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes (Optional)
+                  </label>
+                </FieldTooltip>
+                <textarea
+                  name="notes"
+                  id="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  placeholder="Add any additional notes about this task..."
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.notes ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  rows="3"
+                  maxLength="500"
+                />
+                {errors.notes && (
+                  <p className="mt-1 text-sm text-red-600">{errors.notes}</p>
+                )}
               </div>
 
               {/* Notification Options */}

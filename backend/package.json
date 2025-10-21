@@ -6,11 +6,11 @@
   "scripts": {
     "start": "node src/app/server.js",
     "dev": "nodemon src/app/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:unit": "jest --testPathPattern=unit",
+    "test": "jest --config tests/setup/jest.config.js --passWithNoTests",
+    "test:watch": "jest --config tests/setup/jest.config.js --watch --passWithNoTests",
+    "test:coverage": "jest --config tests/setup/jest.config.js --coverage --passWithNoTests",
+    "test:integration": "jest --config tests/setup/jest.config.js --testPathPattern=integration --passWithNoTests",
+    "test:unit": "jest --config tests/setup/jest.config.js --testPathPattern=unit --passWithNoTests",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix"
   },

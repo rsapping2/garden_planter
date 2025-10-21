@@ -6,8 +6,10 @@ import { useToast } from '../contexts/ToastContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ConfirmationModal from '../components/ConfirmationModal';
+import FieldTooltip from '../components/FieldTooltip';
 import { withPageErrorBoundary } from '../components/PageErrorBoundary';
 import { debugLog, errorLog } from '../utils/debugLogger';
+import { validateGardenName } from '../utils/validation';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -16,6 +18,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [showCreateGarden, setShowCreateGarden] = useState(false);
   const [newGardenName, setNewGardenName] = useState('');
+  const [gardenNameError, setGardenNameError] = useState('');
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [gardenToDelete, setGardenToDelete] = useState(null);
 
@@ -29,6 +33,7 @@ const Dashboard = () => {
 
   const handleCreateGarden = (e) => {
     e.preventDefault();
+    setHasSubmitted(true);
     
     // Check garden limit
     if (gardens.length >= 2) {
@@ -36,21 +41,27 @@ const Dashboard = () => {
       return;
     }
     
-    if (newGardenName.trim()) {
-      try {
-        const newGarden = createGarden({
-          name: newGardenName.trim(),
-          size: '3x6',
-          description: `A ${newGardenName.trim()} garden`
-        });
-        debugLog('Created garden:', newGarden);
-        showSuccess(`Garden "${newGardenName.trim()}" created successfully!`);
-        setNewGardenName('');
-        setShowCreateGarden(false);
-      } catch (error) {
-        errorLog('Error creating garden:', error);
-        showError('Failed to create garden. Please try again.');
-      }
+    // Validate garden name
+    const validation = validateGardenName(newGardenName);
+    if (!validation.isValid) {
+      setGardenNameError(validation.error);
+      return;
+    }
+    
+    try {
+      const newGarden = createGarden({
+        name: validation.sanitized,
+        size: '3x6',
+        description: `A ${validation.sanitized} garden`
+      });
+      debugLog('Created garden:', newGarden);
+      showSuccess(`Garden "${validation.sanitized}" created successfully!`);
+      setNewGardenName('');
+      setGardenNameError('');
+      setShowCreateGarden(false);
+    } catch (error) {
+      errorLog('Error creating garden:', error);
+      showError('Failed to create garden. Please try again.');
     }
   };
 
@@ -292,18 +303,31 @@ const Dashboard = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Garden</h3>
                 <form onSubmit={handleCreateGarden}>
                   <div className="mb-4">
-                    <label htmlFor="gardenName" className="block text-sm font-medium text-gray-700 mb-2">
-                      Garden Name
-                    </label>
+                    <FieldTooltip fieldType="gardenName">
+                      <label htmlFor="gardenName" className="block text-sm font-medium text-gray-700 mb-2">
+                        Garden Name
+                      </label>
+                    </FieldTooltip>
                     <input
                       type="text"
                       id="gardenName"
                       value={newGardenName}
-                      onChange={(e) => setNewGardenName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      onChange={(e) => {
+                        setNewGardenName(e.target.value);
+                        if (hasSubmitted && gardenNameError) {
+                          setGardenNameError('');
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                        gardenNameError ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="e.g., Vegetable Garden, Herb Garden"
+                      maxLength="50"
                       required
                     />
+                    {gardenNameError && (
+                      <p className="mt-1 text-sm text-red-600">{gardenNameError}</p>
+                    )}
                   </div>
                   
                   <div className="mb-6">

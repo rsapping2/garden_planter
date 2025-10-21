@@ -1,53 +1,34 @@
 const request = require('supertest');
-const express = require('express');
-const plantsRoutes = require('../../src/routes/plants');
-
-// Create test app
-const createTestApp = () => {
-  const app = express();
-  app.use(express.json());
-  app.use('/api/plants', plantsRoutes);
-  
-  // Error handling middleware
-  app.use((err, req, res) => {
-    res.status(err.status || 500).json({
-      error: err.message || 'Internal server error'
-    });
-  });
-  
-  return app;
-};
+const { createPlantsTestApp } = require('../setup/testApp');
+const { testPlants, assertions, constants } = require('../setup/testUtils');
 
 describe('Plants Routes', () => {
   let app;
 
   beforeEach(() => {
-    app = createTestApp();
+    app = createPlantsTestApp();
   });
 
   describe('GET /api/plants', () => {
     test('should return plants array', async () => {
       const response = await request(app)
         .get('/api/plants')
-        .expect(200);
+        .expect(constants.HTTP_STATUS.OK);
 
+      assertions.expectSuccessResponse(response);
       expect(response.body.plants).toBeDefined();
       expect(Array.isArray(response.body.plants)).toBe(true);
       expect(response.body.plants.length).toBeGreaterThan(0);
       
-      // Check plant structure
+      // Check plant structure using shared assertion
       const plant = response.body.plants[0];
-      expect(plant).toHaveProperty('id');
-      expect(plant).toHaveProperty('name');
-      expect(plant).toHaveProperty('type');
-      expect(plant).toHaveProperty('sun');
-      expect(plant).toHaveProperty('soil');
+      assertions.expectPlantStructure(plant);
     });
 
     test('should filter plants by type', async () => {
       const response = await request(app)
         .get('/api/plants?type=vegetable')
-        .expect(200);
+        .expect(constants.HTTP_STATUS.OK);
 
       expect(response.body.plants).toBeDefined();
       expect(Array.isArray(response.body.plants)).toBe(true);
