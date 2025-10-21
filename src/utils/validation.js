@@ -11,7 +11,9 @@ export const sanitizeString = (input) => {
   
   return input
     .trim()
-    .replace(/[<>]/g, '') // Remove potential HTML tags
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags and content
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove style tags and content
+    .replace(/<[^>]+>/g, '') // Remove all remaining HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+=/gi, '') // Remove event handlers
     .slice(0, 1000); // Limit length to prevent abuse
@@ -27,24 +29,24 @@ export const validateEmail = (email) => {
     return { isValid: false, sanitized: '', error: 'Email is required' };
   }
 
-  const sanitized = sanitizeString(email).toLowerCase();
+  const trimmed = email.trim().toLowerCase();
   
-  if (sanitized.length === 0) {
+  if (trimmed.length === 0) {
     return { isValid: false, sanitized: '', error: 'Email is required' };
   }
 
-  if (sanitized.length > 254) {
-    return { isValid: false, sanitized: '', error: 'Email is too long' };
+  if (trimmed.length > 254) {
+    return { isValid: false, sanitized: '', error: 'Email must be less than 254 characters' };
   }
 
-  // Enhanced email regex
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  // Enhanced email regex - requires at least one dot (TLD)
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
   
-  if (!emailRegex.test(sanitized)) {
+  if (!emailRegex.test(trimmed)) {
     return { isValid: false, sanitized: '', error: 'Please enter a valid email address' };
   }
 
-  return { isValid: true, sanitized, error: '' };
+  return { isValid: true, sanitized: trimmed, error: '' };
 };
 
 /**
@@ -57,27 +59,27 @@ export const validateName = (name) => {
     return { isValid: false, sanitized: '', error: 'Name is required' };
   }
 
-  const sanitized = sanitizeString(name);
+  const trimmed = name.trim();
   
-  if (sanitized.length === 0) {
+  if (trimmed.length === 0) {
     return { isValid: false, sanitized: '', error: 'Name is required' };
   }
 
-  if (sanitized.length < 2) {
+  if (trimmed.length < 2) {
     return { isValid: false, sanitized: '', error: 'Name must be at least 2 characters (minimum 2, maximum 50)' };
   }
 
-  if (sanitized.length > 50) {
+  if (trimmed.length > 50) {
     return { isValid: false, sanitized: '', error: 'Name must be less than 50 characters (minimum 2, maximum 50)' };
   }
 
-  // Allow letters, spaces, hyphens, and apostrophes only
-  const nameRegex = /^[a-zA-Z\s\-']+$/;
-  if (!nameRegex.test(sanitized)) {
+  // Allow letters (including Unicode/international), spaces, hyphens, and apostrophes only
+  const nameRegex = /^[\p{L}\s\-']+$/u;
+  if (!nameRegex.test(trimmed)) {
     return { isValid: false, sanitized: '', error: 'Name can only contain letters, spaces, hyphens, and apostrophes' };
   }
 
-  return { isValid: true, sanitized, error: '' };
+  return { isValid: true, sanitized: trimmed, error: '' };
 };
 
 /**
@@ -101,12 +103,8 @@ export const validateZipCode = (zipCode) => {
     return { isValid: false, sanitized: '', error: 'ZIP code must be exactly 5 digits (numbers only)' };
   }
 
-  // Check if it's a valid US ZIP code range (00001-99999)
-  const zipNum = parseInt(sanitized, 10);
-  if (zipNum < 1000 || zipNum > 99999) {
-    return { isValid: false, sanitized: '', error: 'Please enter a valid US ZIP code' };
-  }
-
+  // ZIP code must be 5 digits (00501-99999)
+  // Note: 00501 is a valid ZIP code (Holtsville, NY)
   return { isValid: true, sanitized, error: '' };
 };
 
@@ -153,26 +151,29 @@ export const validateGardenName = (gardenName) => {
     return { isValid: false, sanitized: '', error: 'Garden name is required' };
   }
 
-  const sanitized = sanitizeString(gardenName);
+  const trimmed = gardenName.trim();
   
-  if (sanitized.length === 0) {
+  if (trimmed.length === 0) {
     return { isValid: false, sanitized: '', error: 'Garden name is required' };
   }
 
-  if (sanitized.length < 2) {
+  if (trimmed.length < 2) {
     return { isValid: false, sanitized: '', error: 'Garden name must be at least 2 characters (minimum 2, maximum 50)' };
   }
 
-  if (sanitized.length > 50) {
+  if (trimmed.length > 50) {
     return { isValid: false, sanitized: '', error: 'Garden name must be less than 50 characters (minimum 2, maximum 50)' };
   }
 
-  // Allow letters, numbers, spaces, hyphens, and apostrophes
-  const gardenNameRegex = /^[a-zA-Z0-9\s\-']+$/;
-  if (!gardenNameRegex.test(sanitized)) {
-    return { isValid: false, sanitized: '', error: 'Garden name can only contain letters, numbers, spaces, hyphens, and apostrophes' };
+  // Allow letters, numbers, spaces, hyphens, apostrophes, and #
+  const gardenNameRegex = /^[a-zA-Z0-9\s\-'#]+$/;
+  if (!gardenNameRegex.test(trimmed)) {
+    return { isValid: false, sanitized: '', error: 'Garden name can only contain letters, numbers, spaces, hyphens, apostrophes, and #' };
   }
 
+  // Sanitize to prevent XSS (strip HTML if present)
+  const sanitized = sanitizeString(trimmed);
+  
   return { isValid: true, sanitized, error: '' };
 };
 

@@ -82,13 +82,23 @@ The app will be available at:
 
 #### Frontend Tests
 ```bash
-# Run all frontend tests
+# Run tests in WATCH mode (continuous, for development)
 npm test
+
+# Run tests ONCE and exit
+npm run test:ci
+
+# Run tests with coverage report
+npm run test:coverage
 
 # Run specific test types
 npm run test:unit           # Unit tests only
 npm run test:integration    # Integration tests only
 ```
+
+**Note**: 
+- `npm test` runs in **watch mode** - it keeps running and re-runs tests when files change. Press `q` to quit.
+- `npm run test:ci` runs tests **once and exits** - use this for quick verification or CI/CD pipelines.
 
 #### Backend Tests
 ```bash
