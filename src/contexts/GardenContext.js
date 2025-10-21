@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import plantService from '../services/plantService';
 import taskNotificationService from '../services/taskNotificationService';
 import { debugLog, errorLog } from '../utils/debugLogger';
+import { validateGardenName, validateTaskTitle, validateTaskNotes } from '../utils/validation';
 
 const GardenContext = createContext();
 
@@ -154,10 +155,19 @@ export const GardenProvider = ({ children }) => {
   };
 
   const createGarden = (gardenData) => {
+    // Validate and sanitize garden name
+    const nameValidation = validateGardenName(gardenData.name);
+    if (!nameValidation.isValid) {
+      errorLog('Invalid garden name:', nameValidation.error);
+      throw new Error(nameValidation.error);
+    }
+    
     const newGarden = {
       id: Date.now().toString(),
       userId: user.id,
-      ...gardenData,
+      name: nameValidation.sanitized,
+      size: gardenData.size || '3x6',
+      description: gardenData.description ? validateGardenName(gardenData.description).sanitized : '',
       layout: {
         width: 6, // 6 columns (A-F)
         height: 3, // 3 rows (1-3)
@@ -269,10 +279,32 @@ export const GardenProvider = ({ children }) => {
   const addTask = async (taskData) => {
     console.log('🚀 addTask called with:', taskData);
     
+    // Validate and sanitize task data
+    const titleValidation = validateTaskTitle(taskData.title);
+    const notesValidation = taskData.notes ? validateTaskNotes(taskData.notes) : { isValid: true, sanitized: '' };
+    
+    if (!titleValidation.isValid) {
+      errorLog('Invalid task title:', titleValidation.error);
+      throw new Error(titleValidation.error);
+    }
+    
+    if (!notesValidation.isValid) {
+      errorLog('Invalid task notes:', notesValidation.error);
+      throw new Error(notesValidation.error);
+    }
+    
     const newTask = {
       id: Date.now().toString(),
       completed: false,
-      ...taskData
+      title: titleValidation.sanitized,
+      type: taskData.type,
+      dueDate: taskData.dueDate,
+      gardenId: taskData.gardenId,
+      gardenName: taskData.gardenName,
+      notes: notesValidation.sanitized,
+      enableNotification: taskData.enableNotification,
+      notificationTiming: taskData.notificationTiming,
+      notificationType: taskData.notificationType
     };
     console.log('📝 Created new task:', newTask);
     

@@ -13,6 +13,7 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { getUSDAZone } from '../utils/usdaZones';
 import { debugLog, errorLog } from '../utils/debugLogger';
+import { validateName, validateZipCode, sanitizeString } from '../utils/validation';
 
 const AuthContext = createContext();
 
@@ -125,20 +126,33 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (email, password, name, zipCode) => {
     try {
+      // Validate and sanitize inputs before creating user
+      const nameValidation = validateName(name);
+      const zipValidation = validateZipCode(zipCode);
+      
+      if (!nameValidation.isValid) {
+        return { success: false, error: nameValidation.error };
+      }
+      
+      if (!zipValidation.isValid) {
+        return { success: false, error: zipValidation.error };
+      }
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      // Update the user's display name
-      if (name) {
-        await updateFirebaseProfile(firebaseUser, { displayName: name });
+      // Use sanitized data for display name
+      const sanitizedName = nameValidation.sanitized;
+      if (sanitizedName) {
+        await updateFirebaseProfile(firebaseUser, { displayName: sanitizedName });
       }
       
-      // Create user document in Firestore
+      // Create user document in Firestore with sanitized and validated data
       const userData = {
-        name: name || email.split('@')[0] || 'User',
-        email: email,
-        zipCode: zipCode || '',
-        usdaZone: getUSDAZone(zipCode || '90210'),
+        name: sanitizedName || sanitizeString(email.split('@')[0]) || 'User',
+        email: firebaseUser.email, // Use Firebase's validated email
+        zipCode: zipValidation.sanitized,
+        usdaZone: getUSDAZone(zipValidation.sanitized || '90210'),
         emailNotifications: true,
         webPushNotifications: true,
         createdAt: new Date().toISOString()
@@ -185,16 +199,42 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'No user logged in' };
       }
 
-      // Update USDA zone if zipCode is being updated
-      if (updates.zipCode && updates.zipCode !== user.zipCode) {
-        updates.usdaZone = getUSDAZone(updates.zipCode);
+      // Validate and sanitize updates
+      const sanitizedUpdates = {};
+      
+      if (updates.name !== undefined) {
+        const nameValidation = validateName(updates.name);
+        if (!nameValidation.isValid) {
+          return { success: false, error: nameValidation.error };
+        }
+        sanitizedUpdates.name = nameValidation.sanitized;
+      }
+      
+      if (updates.zipCode !== undefined) {
+        const zipValidation = validateZipCode(updates.zipCode);
+        if (!zipValidation.isValid) {
+          return { success: false, error: zipValidation.error };
+        }
+        sanitizedUpdates.zipCode = zipValidation.sanitized;
+        sanitizedUpdates.usdaZone = getUSDAZone(zipValidation.sanitized);
+      }
+      
+      // Copy over other safe updates (booleans, etc.)
+      if (updates.emailNotifications !== undefined) {
+        sanitizedUpdates.emailNotifications = Boolean(updates.emailNotifications);
+      }
+      if (updates.webPushNotifications !== undefined) {
+        sanitizedUpdates.webPushNotifications = Boolean(updates.webPushNotifications);
+      }
+      if (updates.emailVerified !== undefined) {
+        sanitizedUpdates.emailVerified = Boolean(updates.emailVerified);
       }
 
       // Update user document in Firestore
-      await updateDoc(doc(db, 'users', user.id), updates);
+      await updateDoc(doc(db, 'users', user.id), sanitizedUpdates);
 
       // Update local user state
-      const updatedUser = { ...user, ...updates };
+      const updatedUser = { ...user, ...sanitizedUpdates };
       setUser(updatedUser);
       
       return { success: true };
