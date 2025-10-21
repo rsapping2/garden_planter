@@ -1,4 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc,
+  writeBatch 
+} from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { useAuth } from './AuthContext';
 import plantService from '../services/plantService';
 import taskNotificationService from '../services/taskNotificationService';
@@ -27,50 +39,73 @@ export const GardenProvider = ({ children }) => {
     
     setLoading(true);
     try {
-      // Try to load saved gardens from localStorage first
-      const gardensKey = `garden_planner_gardens_${user.id}`;
-      const tasksKey = `garden_planner_tasks_${user.id}`;
-      
-      debugLog('Loading data for user:', user.id);
-      debugLog('Looking for gardens key:', gardensKey);
-      debugLog('Looking for tasks key:', tasksKey);
-      
-      const savedGardens = localStorage.getItem(gardensKey);
-      const savedTasks = localStorage.getItem(tasksKey);
-      
-      debugLog('Found saved gardens:', !!savedGardens);
-      debugLog('Found saved tasks:', !!savedTasks);
-      
-      let userGardens = [];
-      let userTasks = [];
+      debugLog('Loading data for user from Firestore:', user.id);
       
       // Load plants from plant service (supports both local and API data)
       const plantsData = await plantService.getPlants();
+      
+      // Load gardens from Firestore
+      let userGardens = [];
+      try {
+        const gardensQuery = query(
+          collection(db, 'gardens'),
+          where('userId', '==', user.id)
+        );
+        const gardensSnapshot = await getDocs(gardensQuery);
+        userGardens = gardensSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        debugLog(`Loaded ${userGardens.length} gardens from Firestore`);
+      } catch (error) {
+        errorLog('Error loading gardens from Firestore:', error);
+      }
+      
+      // Load tasks from Firestore
+      let userTasks = [];
+      try {
+        const tasksQuery = query(
+          collection(db, 'tasks'),
+          where('userId', '==', user.id)
+        );
+        const tasksSnapshot = await getDocs(tasksQuery);
+        userTasks = tasksSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        debugLog(`Loaded ${userTasks.length} tasks from Firestore`);
+      } catch (error) {
+        errorLog('Error loading tasks from Firestore:', error);
+      }
 
-      // Load gardens - check saved data first, then fallback to mock data
-      if (savedGardens) {
-        userGardens = JSON.parse(savedGardens);
-        debugLog('Loaded saved gardens:', userGardens);
-      } else {
-        // Load mock garden data only if no saved data exists
-        const mockGardens = [
-          {
-            id: '1',
-            userId: user.id,
-            name: 'My First Garden',
-            size: '3x6',
-            layout: {
-              width: 6, // 6 columns (A-F)
-              height: 3, // 3 rows (1-3)
-              plants: [
-                { id: '1', plantId: 'tomato', x: 0, y: 0, datePlanted: '2024-03-15' },
-                { id: '2', plantId: 'lettuce', x: 1, y: 0, datePlanted: '2024-03-10' },
-                { id: '3', plantId: 'carrot', x: 2, y: 0, datePlanted: '2024-03-20' }
-              ]
-            }
+      // If no gardens found in Firestore, create a starter garden
+      if (userGardens.length === 0) {
+        debugLog('No gardens found, creating starter garden');
+        const starterGarden = {
+          userId: user.id,
+          name: 'My First Garden',
+          size: '3x6',
+          description: 'A starter garden for vegetables',
+          layout: {
+            width: 6, // 6 columns (A-F)
+            height: 3, // 3 rows (1-3)
+            plants: [
+              { id: '1', plantId: 'tomato', x: 0, y: 0, datePlanted: '2024-03-15' },
+              { id: '2', plantId: 'lettuce', x: 1, y: 0, datePlanted: '2024-03-10' },
+              { id: '3', plantId: 'carrot', x: 2, y: 0, datePlanted: '2024-03-20' }
+            ]
           }
-        ];
-        userGardens = mockGardens;
+        };
+        
+        try {
+          const gardenRef = await addDoc(collection(db, 'gardens'), starterGarden);
+          userGardens = [{ id: gardenRef.id, ...starterGarden }];
+          debugLog('Created starter garden in Firestore:', gardenRef.id);
+        } catch (error) {
+          errorLog('Error creating starter garden:', error);
+          // Fallback to local state only
+          userGardens = [{ id: '1', ...starterGarden }];
+        }
       }
 
       // Generate current dates for tasks
@@ -121,12 +156,34 @@ export const GardenProvider = ({ children }) => {
         }
       ];
       
-      // Load tasks - check saved data first, then fallback to mock data
-      if (savedTasks) {
-        userTasks = JSON.parse(savedTasks);
-        debugLog('Loaded saved tasks:', userTasks);
-      } else {
-        userTasks = mockTasks;
+      // If no tasks found in Firestore, create starter tasks
+      if (userTasks.length === 0 && userGardens.length > 0) {
+        debugLog('No tasks found, creating starter tasks');
+        const starterTasks = mockTasks.map(task => ({
+          ...task,
+          userId: user.id,
+          gardenId: userGardens[0].id,
+          gardenName: userGardens[0].name
+        }));
+        
+        try {
+          const batch = writeBatch(db);
+          const taskRefs = [];
+          
+          for (const task of starterTasks) {
+            const taskRef = doc(collection(db, 'tasks'));
+            batch.set(taskRef, task);
+            taskRefs.push({ id: taskRef.id, ...task });
+          }
+          
+          await batch.commit();
+          userTasks = taskRefs;
+          debugLog(`Created ${userTasks.length} starter tasks in Firestore`);
+        } catch (error) {
+          errorLog('Error creating starter tasks:', error);
+          // Fallback to local state only
+          userTasks = starterTasks;
+        }
       }
 
       setGardens(userGardens);
@@ -145,16 +202,9 @@ export const GardenProvider = ({ children }) => {
     }
   }, [user, loadUserData]);
 
-  // Helper function to save data to localStorage
-  const saveToLocalStorage = (gardens, tasks) => {
-    if (user) {
-      localStorage.setItem(`garden_planner_gardens_${user.id}`, JSON.stringify(gardens));
-      localStorage.setItem(`garden_planner_tasks_${user.id}`, JSON.stringify(tasks));
-      debugLog('Saved to localStorage:', { gardens: gardens.length, tasks: tasks.length });
-    }
-  };
+  // Helper functions removed - now using Firestore directly
 
-  const createGarden = (gardenData) => {
+  const createGarden = async (gardenData) => {
     // Validate and sanitize garden name
     const nameValidation = validateGardenName(gardenData.name);
     if (!nameValidation.isValid) {
@@ -162,8 +212,7 @@ export const GardenProvider = ({ children }) => {
       throw new Error(nameValidation.error);
     }
     
-    const newGarden = {
-      id: Date.now().toString(),
+    const newGardenData = {
       userId: user.id,
       name: nameValidation.sanitized,
       size: gardenData.size || '3x6',
@@ -174,32 +223,72 @@ export const GardenProvider = ({ children }) => {
         plants: []
       }
     };
-    const updatedGardens = [...gardens, newGarden];
-    setGardens(updatedGardens);
-    saveToLocalStorage(updatedGardens, tasks);
-    return newGarden;
+    
+    try {
+      // Save to Firestore
+      const gardenRef = await addDoc(collection(db, 'gardens'), newGardenData);
+      const newGarden = { id: gardenRef.id, ...newGardenData };
+      
+      // Update local state
+      const updatedGardens = [...gardens, newGarden];
+      setGardens(updatedGardens);
+      
+      debugLog('Garden created in Firestore:', gardenRef.id);
+      return newGarden;
+    } catch (error) {
+      errorLog('Error creating garden in Firestore:', error);
+      throw error;
+    }
   };
 
-  const deleteGarden = (gardenId) => {
-    const updatedGardens = gardens.filter(garden => garden.id !== gardenId);
-    const updatedTasks = tasks.filter(task => task.gardenId !== gardenId);
-    setGardens(updatedGardens);
-    setTasks(updatedTasks);
-    saveToLocalStorage(updatedGardens, updatedTasks);
+  const deleteGarden = async (gardenId) => {
+    try {
+      // Delete from Firestore
+      await deleteDoc(doc(db, 'gardens', gardenId));
+      
+      // Delete associated tasks
+      const gardenTasks = tasks.filter(task => task.gardenId === gardenId);
+      const batch = writeBatch(db);
+      gardenTasks.forEach(task => {
+        batch.delete(doc(db, 'tasks', task.id));
+      });
+      await batch.commit();
+      
+      // Update local state
+      const updatedGardens = gardens.filter(garden => garden.id !== gardenId);
+      const updatedTasks = tasks.filter(task => task.gardenId !== gardenId);
+      setGardens(updatedGardens);
+      setTasks(updatedTasks);
+      
+      debugLog('Garden and associated tasks deleted from Firestore:', gardenId);
+    } catch (error) {
+      errorLog('Error deleting garden from Firestore:', error);
+      throw error;
+    }
   };
 
-  const updateGardenLayout = (gardenId, layout) => {
+  const updateGardenLayout = async (gardenId, layout) => {
     debugLog('Updating garden layout for garden:', gardenId);
     debugLog('New layout:', layout);
     
-    const updatedGardens = gardens.map(garden => 
-      garden.id === gardenId 
-        ? { ...garden, layout }
-        : garden
-    );
-    debugLog('Updated gardens state:', updatedGardens);
-    setGardens(updatedGardens);
-    saveToLocalStorage(updatedGardens, tasks);
+    try {
+      // Update in Firestore
+      await updateDoc(doc(db, 'gardens', gardenId), { layout });
+      
+      // Update local state
+      const updatedGardens = gardens.map(garden => 
+        garden.id === gardenId 
+          ? { ...garden, layout }
+          : garden
+      );
+      debugLog('Updated gardens state:', updatedGardens);
+      setGardens(updatedGardens);
+      
+      debugLog('Garden layout updated in Firestore:', gardenId);
+    } catch (error) {
+      errorLog('Error updating garden layout in Firestore:', error);
+      throw error;
+    }
   };
 
   const addPlantToGarden = (gardenId, plantId, position) => {
@@ -268,16 +357,27 @@ export const GardenProvider = ({ children }) => {
     updateGardenLayout(gardenId, updatedLayout);
   };
 
-  const completeTask = (taskId) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { ...task, completed: true }
-        : task
-    ));
+  const completeTask = async (taskId) => {
+    try {
+      // Update in Firestore
+      await updateDoc(doc(db, 'tasks', taskId), { completed: true });
+      
+      // Update local state
+      setTasks(prev => prev.map(task => 
+        task.id === taskId 
+          ? { ...task, completed: true }
+          : task
+      ));
+      
+      debugLog('Task completed in Firestore:', taskId);
+    } catch (error) {
+      errorLog('Error completing task in Firestore:', error);
+      throw error;
+    }
   };
 
   const addTask = async (taskData) => {
-    console.log('🚀 addTask called with:', taskData);
+    debugLog('addTask called with:', taskData);
     
     // Validate and sanitize task data
     const titleValidation = validateTaskTitle(taskData.title);
@@ -293,8 +393,8 @@ export const GardenProvider = ({ children }) => {
       throw new Error(notesValidation.error);
     }
     
-    const newTask = {
-      id: Date.now().toString(),
+    const newTaskData = {
+      userId: user.id,
       completed: false,
       title: titleValidation.sanitized,
       type: taskData.type,
@@ -306,53 +406,72 @@ export const GardenProvider = ({ children }) => {
       notificationTiming: taskData.notificationTiming,
       notificationType: taskData.notificationType
     };
-    console.log('📝 Created new task:', newTask);
+    debugLog('Creating new task:', newTaskData);
     
-    const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-    saveToLocalStorage(gardens, updatedTasks);
+    try {
+      // Save to Firestore
+      const taskRef = await addDoc(collection(db, 'tasks'), newTaskData);
+      const newTask = { id: taskRef.id, ...newTaskData };
+      
+      // Update local state
+      const updatedTasks = [...tasks, newTask];
+      setTasks(updatedTasks);
+      
+      debugLog('Task created in Firestore:', taskRef.id);
     
-    // Create notification if enabled
-    console.log('🔔 Task notification check:', { 
-      enableNotification: taskData.enableNotification, 
-      hasUser: !!user,
-      userEmailNotifications: user?.emailNotifications,
-      userWebPushNotifications: user?.webPushNotifications
-    });
-    
-    if (taskData.enableNotification && user) {
-      try {
-        console.log('🔔 Attempting to create notification for task:', newTask.title);
-        const notificationId = await taskNotificationService.createTaskNotification(newTask, user);
-        console.log('✅ Successfully created notification:', notificationId);
-        
-        
-      } catch (error) {
-        console.error('❌ Failed to create task notification:', error);
-        // Don't fail the task creation if notification fails
-      }
-    } else {
-      console.log('⏭️ Skipping notification creation:', { 
+      // Create notification if enabled
+      debugLog('Task notification check:', { 
         enableNotification: taskData.enableNotification, 
-        hasUser: !!user 
+        hasUser: !!user,
+        userEmailNotifications: user?.emailNotifications,
+        userWebPushNotifications: user?.webPushNotifications
       });
+      
+      if (taskData.enableNotification && user) {
+        try {
+          debugLog('Attempting to create notification for task:', newTask.title);
+          const notificationId = await taskNotificationService.createTaskNotification(newTask, user);
+          debugLog('Successfully created notification:', notificationId);
+        } catch (error) {
+          errorLog('Failed to create task notification:', error);
+          // Don't fail the task creation if notification fails
+        }
+      } else {
+        debugLog('Skipping notification creation:', { 
+          enableNotification: taskData.enableNotification, 
+          hasUser: !!user 
+        });
+      }
+      
+      return newTask;
+    } catch (error) {
+      errorLog('Error creating task in Firestore:', error);
+      throw error;
     }
-    
-    return newTask;
   };
 
   const deleteTask = async (taskId) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
-    setTasks(updatedTasks);
-    saveToLocalStorage(gardens, updatedTasks);
-    
-    // Cancel notification if it exists
     try {
-      await taskNotificationService.cancelTaskNotification(taskId);
-      debugLog('Cancelled notification for deleted task:', taskId);
+      // Delete from Firestore
+      await deleteDoc(doc(db, 'tasks', taskId));
+      
+      // Update local state
+      const updatedTasks = tasks.filter(task => task.id !== taskId);
+      setTasks(updatedTasks);
+      
+      debugLog('Task deleted from Firestore:', taskId);
+      
+      // Cancel notification if it exists
+      try {
+        await taskNotificationService.cancelTaskNotification(taskId);
+        debugLog('Cancelled notification for deleted task:', taskId);
+      } catch (error) {
+        errorLog('Failed to cancel task notification:', error);
+        // Don't fail the task deletion if notification cancellation fails
+      }
     } catch (error) {
-      errorLog('Failed to cancel task notification:', error);
-      // Don't fail the task deletion if notification cancellation fails
+      errorLog('Error deleting task from Firestore:', error);
+      throw error;
     }
   };
 

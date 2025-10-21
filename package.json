@@ -24,6 +24,8 @@
     "start:local": "REACT_APP_USE_LOCALSTORAGE=true react-scripts start",
     "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
+    "test:ci": "react-scripts test --watchAll=false --passWithNoTests",
+    "test:coverage": "react-scripts test --coverage --watchAll=false --passWithNoTests",
     "test:unit": "react-scripts test --testPathPattern=tests/unit",
     "test:integration": "react-scripts test --testPathPattern=tests/integration",
     "eject": "react-scripts eject",

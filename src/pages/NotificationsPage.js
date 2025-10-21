@@ -5,6 +5,7 @@ import { useToast } from '../contexts/ToastContext';
 import config from '../config/environment';
 import emailService from '../services/emailService';
 import notificationService from '../services/notificationService';
+import { debugLog } from '../utils/debugLogger';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -52,7 +53,7 @@ const NotificationsPage = () => {
   useEffect(() => {
     const loadNotifications = async () => {
       if (!user?.id) {
-        console.log('No user ID available, skipping notification load');
+        debugLog('No user ID available, skipping notification load');
         setNotifications([]);
         setLoading(false);
         userIdRef.current = null;
@@ -61,11 +62,11 @@ const NotificationsPage = () => {
       
       // Only reload if user ID actually changed (not just the user object reference)
       if (userIdRef.current === user.id) {
-        console.log('User ID unchanged, skipping reload to prevent duplicate data');
+        debugLog('User ID unchanged, skipping reload to prevent duplicate data');
         return;
       }
       
-      console.log('Loading notifications for user:', user.id);
+      debugLog('Loading notifications for user:', user.id);
       userIdRef.current = user.id;
       
       // Always use Firestore - no localStorage fallback
@@ -84,8 +85,8 @@ const NotificationsPage = () => {
         ]);
         
         // Set notifications (empty array if no notifications exist)
-        console.log(`📬 Found ${userNotifications.length} existing notifications`);
-        console.log('📋 Notification details:', userNotifications.map(n => ({ 
+        debugLog(`Found ${userNotifications.length} existing notifications`);
+        debugLog('Notification details:', userNotifications.map(n => ({ 
           id: n.id, 
           title: n.title, 
           read: n.read,
