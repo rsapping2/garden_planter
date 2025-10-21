@@ -8,10 +8,14 @@ const AddTaskModal = ({ isOpen, onClose }) => {
     title: '',
     type: 'watering',
     dueDate: getTodayLocalDateString(),
-    gardenId: gardens.length > 0 ? gardens[0].id : ''
+    gardenId: gardens.length > 0 ? gardens[0].id : '',
+    // Notification options
+    enableNotification: true,
+    notificationTiming: '0', // same day by default
+    notificationType: 'both' // 'email', 'web', or 'both'
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.title.trim()) {
       const selectedGarden = gardens.find(g => g.id === formData.gardenId);
@@ -19,12 +23,15 @@ const AddTaskModal = ({ isOpen, onClose }) => {
         ...formData,
         gardenName: selectedGarden?.name || 'Unknown Garden'
       };
-      addTask(taskData);
+      await addTask(taskData);
       setFormData({
         title: '',
         type: 'watering',
         dueDate: getTodayLocalDateString(),
-        gardenId: gardens.length > 0 ? gardens[0].id : ''
+        gardenId: gardens.length > 0 ? gardens[0].id : '',
+        enableNotification: true,
+        notificationTiming: '0',
+        notificationType: 'both'
       });
       onClose();
     }
@@ -131,6 +138,70 @@ const AddTaskModal = ({ isOpen, onClose }) => {
                     <option value="">No gardens available</option>
                   )}
                 </select>
+              </div>
+
+              {/* Notification Options */}
+              <div className="border-t pt-4 mt-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">🔔 Notification Settings</h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="enableNotification"
+                      name="enableNotification"
+                      checked={formData.enableNotification}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        enableNotification: e.target.checked
+                      }))}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <label htmlFor="enableNotification" className="ml-2 text-sm text-gray-700">
+                      Send notification for this task
+                    </label>
+                  </div>
+
+                  {formData.enableNotification && (
+                    <>
+                      <div>
+                        <label htmlFor="notificationTiming" className="block text-sm font-medium text-gray-700 mb-1">
+                          Remind me
+                        </label>
+                        <select
+                          name="notificationTiming"
+                          id="notificationTiming"
+                          value={formData.notificationTiming}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        >
+                          <option value="0">On the due date</option>
+                          <option value="1">1 day before</option>
+                          <option value="2">2 days before</option>
+                          <option value="3">3 days before</option>
+                          <option value="7">1 week before</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="notificationType" className="block text-sm font-medium text-gray-700 mb-1">
+                          Notification method
+                        </label>
+                        <select
+                          name="notificationType"
+                          id="notificationType"
+                          value={formData.notificationType}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        >
+                          <option value="both">Email + Web Push</option>
+                          <option value="email">Email only</option>
+                          <option value="web">Web Push only</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
               <div className="mt-6 flex justify-end space-x-3">

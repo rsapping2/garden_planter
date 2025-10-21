@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import plantService from '../services/plantService';
+import taskNotificationService from '../services/taskNotificationService';
 import { debugLog, errorLog } from '../utils/debugLogger';
 
 const GardenContext = createContext();
@@ -265,22 +266,62 @@ export const GardenProvider = ({ children }) => {
     ));
   };
 
-  const addTask = (taskData) => {
+  const addTask = async (taskData) => {
+    console.log('🚀 addTask called with:', taskData);
+    
     const newTask = {
       id: Date.now().toString(),
       completed: false,
       ...taskData
     };
+    console.log('📝 Created new task:', newTask);
+    
     const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
     saveToLocalStorage(gardens, updatedTasks);
+    
+    // Create notification if enabled
+    console.log('🔔 Task notification check:', { 
+      enableNotification: taskData.enableNotification, 
+      hasUser: !!user,
+      userEmailNotifications: user?.emailNotifications,
+      userWebPushNotifications: user?.webPushNotifications
+    });
+    
+    if (taskData.enableNotification && user) {
+      try {
+        console.log('🔔 Attempting to create notification for task:', newTask.title);
+        const notificationId = await taskNotificationService.createTaskNotification(newTask, user);
+        console.log('✅ Successfully created notification:', notificationId);
+        
+        
+      } catch (error) {
+        console.error('❌ Failed to create task notification:', error);
+        // Don't fail the task creation if notification fails
+      }
+    } else {
+      console.log('⏭️ Skipping notification creation:', { 
+        enableNotification: taskData.enableNotification, 
+        hasUser: !!user 
+      });
+    }
+    
     return newTask;
   };
 
-  const deleteTask = (taskId) => {
+  const deleteTask = async (taskId) => {
     const updatedTasks = tasks.filter(task => task.id !== taskId);
     setTasks(updatedTasks);
     saveToLocalStorage(gardens, updatedTasks);
+    
+    // Cancel notification if it exists
+    try {
+      await taskNotificationService.cancelTaskNotification(taskId);
+      debugLog('Cancelled notification for deleted task:', taskId);
+    } catch (error) {
+      errorLog('Failed to cancel task notification:', error);
+      // Don't fail the task deletion if notification cancellation fails
+    }
   };
 
   const getPlantById = (plantId) => {

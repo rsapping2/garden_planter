@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import config from '../config/environment';
 import emailService from '../services/emailService';
+import notificationService from '../services/notificationService';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -26,38 +27,8 @@ const NotificationsPage = () => {
     }
   });
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      type: 'watering',
-      title: 'Water your tomatoes',
-      message: 'Your tomato plants need watering today',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      read: false,
-      garden: 'My First Garden',
-      plant: 'Tomato'
-    },
-    {
-      id: '2',
-      type: 'harvest',
-      title: 'Harvest lettuce ready',
-      message: 'Your lettuce is ready for harvest',
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      read: true,
-      garden: 'My First Garden',
-      plant: 'Lettuce'
-    },
-    {
-      id: '3',
-      type: 'planting',
-      title: 'Plant carrots',
-      message: 'Time to plant your carrot seeds',
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      read: true,
-      garden: 'My First Garden',
-      plant: 'Carrot'
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const settingsInitialized = useRef(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -75,6 +46,60 @@ const NotificationsPage = () => {
       Notification.requestPermission();
     }
   }, [user, navigate]);
+
+  // Load notifications from Firestore
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!user?.id) {
+        console.log('No user ID available, skipping notification load');
+        return;
+      }
+      
+      console.log('Loading notifications for user:', user.id);
+      
+      // Always use Firestore - no localStorage fallback
+      
+      try {
+        setLoading(true);
+        
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Firestore connection timeout')), 5000)
+        );
+        
+        const userNotifications = await Promise.race([
+          notificationService.getUserNotifications(user.id),
+          timeoutPromise
+        ]);
+        
+        // Set notifications (empty array if no notifications exist)
+        console.log(`📬 Found ${userNotifications.length} existing notifications`);
+        console.log('📋 Notification details:', userNotifications.map(n => ({ 
+          id: n.id, 
+          title: n.title, 
+          timestamp: n.timestamp,
+          type: n.type 
+        })));
+        setNotifications(userNotifications);
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          userId: user.id
+        });
+        
+        // Always use Firestore - no localStorage fallback
+        console.error('Firestore error:', error);
+        showError(`Failed to load notifications: ${error.message}`);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNotifications();
+  }, [user?.id, showError]);
 
   // Handle notification cooldown timer
   useEffect(() => {
@@ -138,26 +163,44 @@ const NotificationsPage = () => {
     }
   };
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === notificationId 
-          ? { ...notif, read: true }
-          : notif
-      )
-    );
+  const markAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId 
+            ? { ...notif, read: true }
+            : notif
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      showError('Failed to mark notification as read');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead(user.id);
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      showError('Failed to mark all notifications as read');
+    }
   };
 
-  const deleteNotification = (notificationId) => {
-    setNotifications(prev => 
-      prev.filter(notif => notif.id !== notificationId)
-    );
+  const deleteNotification = async (notificationId) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+      setNotifications(prev => 
+        prev.filter(notif => notif.id !== notificationId)
+      );
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      showError('Failed to delete notification');
+    }
   };
 
   const updateSettings = async (key, value) => {
@@ -469,7 +512,12 @@ const NotificationsPage = () => {
             )}
           </div>
 
-          {notifications.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <span className="ml-3 text-gray-600">Loading notifications...</span>
+            </div>
+          ) : notifications.length > 0 ? (
             <div className="space-y-4">
               {notifications.map(notification => (
                 <div
