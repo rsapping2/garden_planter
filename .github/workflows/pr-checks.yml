@@ -122,9 +122,9 @@ jobs:
       env:
         CI: true
 
-  # Job 6: Backend Coverage
+  # Job 6: Backend Code Coverage
   backend-coverage:
-    name: Backend Coverage
+    name: Backend Code Coverage
     runs-on: ubuntu-latest
     needs: [backend-tests]
     
