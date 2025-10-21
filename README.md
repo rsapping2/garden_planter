@@ -70,6 +70,21 @@ The app will be available at:
 - **Frontend**: http://localhost:3000
 - **Firebase UI**: http://localhost:4000 (when using emulators)
 
+### Code Quality
+
+#### Linting
+```bash
+# Run ESLint on all files
+npx eslint .
+
+# Run ESLint with auto-fix
+npx eslint . --fix
+
+# Run ESLint on specific files/directories
+npx eslint src/
+npx eslint src/components/
+```
+
 ### Development Modes
 
 #### Firebase Emulators
