@@ -17,19 +17,19 @@ class TaskNotificationService {
    */
   async createTaskNotification(task, user) {
     try {
-      console.log('🔔 Creating notification for task:', task.title);
-      console.log('📋 Task data:', { enableNotification: task.enableNotification, notificationTiming: task.notificationTiming, dueDate: task.dueDate });
-      console.log('👤 User data:', { emailNotifications: user.emailNotifications, webPushNotifications: user.webPushNotifications });
+      debugLog('Creating notification for task:', task.title);
+      debugLog('Task data:', { enableNotification: task.enableNotification, notificationTiming: task.notificationTiming, dueDate: task.dueDate });
+      debugLog('User data:', { emailNotifications: user.emailNotifications, webPushNotifications: user.webPushNotifications });
       
       // Check if notifications are enabled for this task
       if (!task.enableNotification) {
-        console.log('❌ Notifications disabled for task:', task.title);
+        debugLog('Notifications disabled for task:', task.title);
         return null;
       }
 
       // Check if user has notification preferences enabled
       if (!user.emailNotifications && !user.webPushNotifications) {
-        console.log('❌ User has all notifications disabled');
+        debugLog('User has all notifications disabled');
         return null;
       }
 
@@ -55,7 +55,7 @@ class TaskNotificationService {
       const notificationDateStart = new Date(notificationDate);
       notificationDateStart.setHours(0, 0, 0, 0); // Reset to start of notification day
       
-      console.log('📅 Notification date calculation:', { 
+      debugLog('Notification date calculation:', { 
         dueDate: task.dueDate, 
         timingDays, 
         notificationDate: notificationDate.toISOString(), 
@@ -65,7 +65,7 @@ class TaskNotificationService {
       });
       
       if (notificationDateStart < now) {
-        console.log('❌ Notification date is in the past, skipping:', task.title);
+        debugLog('Notification date is in the past, skipping:', task.title);
         return null;
       }
 
@@ -96,8 +96,8 @@ class TaskNotificationService {
         scheduledFor: notificationDate
       });
 
-      console.log(`✅ Created notification for task "${task.title}" scheduled for ${notificationDate.toISOString()}`);
-      console.log('📝 Notification details:', { notificationId, taskId: task.id, scheduledFor: notificationDate });
+      debugLog(`Created notification for task "${task.title}" scheduled for ${notificationDate.toISOString()}`);
+      debugLog('Notification details:', { notificationId, taskId: task.id, scheduledFor: notificationDate });
       return notificationId;
 
     } catch (error) {

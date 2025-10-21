@@ -137,6 +137,36 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
         request.auth.uid == resource.data.userId;
     }
+    
+    // Email verification codes - secure server-side storage
+    match /emailVerifications/{verificationId} {
+      // Users can only read their own verification codes
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Users can create verification codes for themselves
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        isValidString(request.resource.data.email, 3, 254) &&
+        isValidString(request.resource.data.code, 6, 6) &&
+        request.resource.data.attempts == 0 &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.expiresAt is timestamp;
+      
+      // Users can update their own verification attempts
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        // Ensure userId and email cannot be changed
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.email == resource.data.email &&
+        // Attempts can only increase up to 3
+        request.resource.data.attempts <= 3 &&
+        request.resource.data.attempts >= resource.data.attempts;
+      
+      // Users can delete their own verification codes
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
   }
 }
 

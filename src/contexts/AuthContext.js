@@ -9,7 +9,7 @@ import {
   updateEmail as updateFirebaseEmail,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { getUSDAZone } from '../utils/usdaZones';
 import { debugLog, errorLog } from '../utils/debugLogger';
@@ -309,8 +309,39 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (email) => {
     try {
+      // SECURITY: Check if account exists and is verified before sending reset email
+      // This prevents spam attacks on unverified accounts
+      
+      // Query Firestore for user with this email
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email.toLowerCase().trim()));
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        // Don't reveal if account exists (security best practice)
+        // Return success message anyway to prevent email enumeration
+        return { 
+          success: true, 
+          message: 'If an account exists with this email, a password reset link has been sent.' 
+        };
+      }
+      
+      // Check if account is verified
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+      
+      if (!userData.emailVerified) {
+        // SECURITY FIX: Return same generic message to prevent email enumeration
+        // Don't reveal whether account is unverified vs non-existent
+        return { 
+          success: true, 
+          message: 'If an account exists with this email, a password reset link has been sent.' 
+        };
+      }
+      
+      // Account exists and is verified - send reset email
       await sendPasswordResetEmail(auth, email);
-      return { success: true, message: 'Password reset email sent successfully' };
+      return { success: true, message: 'If an account exists with this email, a password reset link has been sent.' };
     } catch (error) {
       errorLog('Firebase password reset error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };

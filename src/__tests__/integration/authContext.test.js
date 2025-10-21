@@ -21,20 +21,30 @@ jest.mock('firebase/auth', () => ({
 
 jest.mock('firebase/firestore', () => ({
   getFirestore: jest.fn(() => ({})),
-  doc: jest.fn(),
-  getDoc: jest.fn(),
-  setDoc: jest.fn(),
-  updateDoc: jest.fn(),
-  collection: jest.fn(),
-  query: jest.fn(),
-  where: jest.fn(),
+  doc: jest.fn((db, collection, id) => ({ collection, id })),
+  getDoc: jest.fn(() => Promise.resolve({
+    exists: () => false,
+    data: () => null
+  })),
+  setDoc: jest.fn(() => Promise.resolve()),
+  updateDoc: jest.fn(() => Promise.resolve()),
+  collection: jest.fn((db, name) => ({ name })),
+  query: jest.fn((...args) => ({ args })),
+  where: jest.fn((field, op, value) => ({ field, op, value })),
   orderBy: jest.fn(),
   limit: jest.fn(),
-  getDocs: jest.fn(),
-  addDoc: jest.fn(),
-  deleteDoc: jest.fn(),
-  writeBatch: jest.fn(),
-  serverTimestamp: jest.fn(),
+  getDocs: jest.fn(() => Promise.resolve({ 
+    empty: true,
+    docs: [] 
+  })),
+  addDoc: jest.fn((_collection, _data) => Promise.resolve({ id: `mock-${Date.now()}` })),
+  deleteDoc: jest.fn(() => Promise.resolve()),
+  writeBatch: jest.fn(() => ({
+    set: jest.fn(),
+    delete: jest.fn(),
+    commit: jest.fn(() => Promise.resolve())
+  })),
+  serverTimestamp: jest.fn(() => new Date()),
   connectFirestoreEmulator: jest.fn()
 }));
 

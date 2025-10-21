@@ -1,10 +1,34 @@
 import config from '../config/environment';
 import { debugLog } from '../utils/debugLogger';
 
+/**
+ * ⚠️ SECURITY WARNING: Email Verification Codes Storage
+ * 
+ * This implementation stores verification codes in browser localStorage,
+ * which is NOT SECURE for production use.
+ * 
+ * SECURITY RISKS:
+ * ❌ Codes are visible in browser DevTools (F12 → Application → Local Storage)
+ * ❌ Users can read other users' codes if they share a device
+ * ❌ Malicious browser extensions could potentially access codes
+ * ❌ XSS attacks could steal codes from localStorage
+ * ❌ No server-side validation - codes could be manipulated
+ * 
+ * RECOMMENDED SOLUTIONS FOR PRODUCTION:
+ * 1. Firebase Cloud Functions - Generate/store codes server-side
+ * 2. Real Email Service - Use SendGrid, Mailgun, or AWS SES
+ * 3. OAuth Providers - Use Google/GitHub sign-in (email pre-verified)
+ * 
+ * CURRENT STATUS: 
+ * ✅ Acceptable for demo/testing environments
+ * ❌ NOT suitable for production with real user data
+ * 
+ * See: docs/EMAIL_SETUP.md for production email integration guide
+ */
 class EmailService {
   constructor() {
     this.pendingVerifications = new Map(); // Store pending verification codes
-    // Load existing verifications from localStorage
+    // ⚠️ SECURITY: Loading from localStorage - not secure for production
     this.loadVerifications();
   }
 
