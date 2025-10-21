@@ -2,6 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAnalytics } from 'firebase/analytics';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { debugLog, errorLog, infoLog } from '../utils/debugLogger';
 
 // Firebase configuration - all values from environment variables
 const firebaseConfig = {
@@ -24,8 +26,8 @@ const requiredEnvVars = [
 
 const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
 if (missingVars.length > 0) {
-  console.error('Missing required Firebase environment variables:', missingVars);
-  console.error('Please copy env.development.example to .env.local and update the values');
+  errorLog('Missing required Firebase environment variables:', missingVars);
+  errorLog('Please copy env.development.example to .env.local and update the values');
 }
 
 // Initialize Firebase
@@ -35,13 +37,31 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Initialize App Check (only in production)
+let appCheck = null;
+if (process.env.NODE_ENV === 'production' && process.env.REACT_APP_RECAPTCHA_SITE_KEY) {
+  try {
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(process.env.REACT_APP_RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true
+    });
+    infoLog('🛡️ Firebase App Check initialized');
+  } catch (error) {
+    errorLog('App Check initialization failed:', error.message);
+  }
+} else if (process.env.NODE_ENV === 'production') {
+  errorLog('⚠️ App Check not initialized - missing REACT_APP_RECAPTCHA_SITE_KEY');
+} else {
+  debugLog('🛡️ App Check skipped in development mode');
+}
+
 // Initialize Analytics (only in production)
 let analytics = null;
 if (process.env.NODE_ENV === 'production') {
   try {
     analytics = getAnalytics(app);
   } catch (error) {
-    console.log('Analytics initialization skipped:', error.message);
+    debugLog('Analytics initialization skipped:', error.message);
   }
 }
 
@@ -50,22 +70,22 @@ if (process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_EMULATOR
   // Connect to emulators (only once per session)
   try {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-    console.log('🔥 Connected to Firebase Auth Emulator');
+    infoLog('🔥 Connected to Firebase Auth Emulator');
   } catch (error) {
-    console.log('Auth emulator connection skipped:', error.message);
+    debugLog('Auth emulator connection skipped:', error.message);
   }
   
   try {
     connectFirestoreEmulator(db, 'localhost', 8080);
-    console.log('🔥 Connected to Firestore Emulator');
+    infoLog('🔥 Connected to Firestore Emulator');
   } catch (error) {
-    console.log('Firestore emulator connection skipped:', error.message);
+    debugLog('Firestore emulator connection skipped:', error.message);
   }
 } else if (process.env.NODE_ENV === 'development') {
-  console.log('🔥 Firebase running in development mode without emulators');
+  infoLog('🔥 Firebase running in development mode without emulators');
 } else {
-  console.log('🔥 Firebase running in production mode');
+  infoLog('🔥 Firebase running in production mode');
 }
 
-export { auth, db, analytics };
+export { auth, db, analytics, appCheck };
 export default app;

@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import config from '../config/environment';
 import emailService from '../services/emailService';
+import notificationService from '../services/notificationService';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const NotificationsPage = () => {
   const { user, updateUser } = useAuth();
+  const { showError, showSuccess, showWarning } = useToast();
   const navigate = useNavigate();
   
   const [notificationSettings, setNotificationSettings] = useState({
@@ -24,39 +27,11 @@ const NotificationsPage = () => {
     }
   });
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      type: 'watering',
-      title: 'Water your tomatoes',
-      message: 'Your tomato plants need watering today',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      read: false,
-      garden: 'My First Garden',
-      plant: 'Tomato'
-    },
-    {
-      id: '2',
-      type: 'harvest',
-      title: 'Harvest lettuce ready',
-      message: 'Your lettuce is ready for harvest',
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-      read: true,
-      garden: 'My First Garden',
-      plant: 'Lettuce'
-    },
-    {
-      id: '3',
-      type: 'planting',
-      title: 'Plant carrots',
-      message: 'Time to plant your carrot seeds',
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      read: true,
-      garden: 'My First Garden',
-      plant: 'Carrot'
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const settingsInitialized = useRef(false);
+  const userIdRef = useRef(null);
   const [showSettings, setShowSettings] = useState(false);
   const [lastNotificationTime, setLastNotificationTime] = useState(null);
   const [isNotificationCooldown, setIsNotificationCooldown] = useState(false);
@@ -73,6 +48,71 @@ const NotificationsPage = () => {
     }
   }, [user, navigate]);
 
+  // Load notifications from Firestore
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!user?.id) {
+        console.log('No user ID available, skipping notification load');
+        setNotifications([]);
+        setLoading(false);
+        userIdRef.current = null;
+        return;
+      }
+      
+      // Only reload if user ID actually changed (not just the user object reference)
+      if (userIdRef.current === user.id) {
+        console.log('User ID unchanged, skipping reload to prevent duplicate data');
+        return;
+      }
+      
+      console.log('Loading notifications for user:', user.id);
+      userIdRef.current = user.id;
+      
+      // Always use Firestore - no localStorage fallback
+      
+      try {
+        setLoading(true);
+        
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Firestore connection timeout')), 5000)
+        );
+        
+        const userNotifications = await Promise.race([
+          notificationService.getUserNotifications(user.id),
+          timeoutPromise
+        ]);
+        
+        // Set notifications (empty array if no notifications exist)
+        console.log(`📬 Found ${userNotifications.length} existing notifications`);
+        console.log('📋 Notification details:', userNotifications.map(n => ({ 
+          id: n.id, 
+          title: n.title, 
+          read: n.read,
+          timestamp: n.timestamp,
+          type: n.type 
+        })));
+        setNotifications(userNotifications);
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          userId: user.id
+        });
+        
+        // Always use Firestore - no localStorage fallback
+        console.error('Firestore error:', error);
+        showError(`Failed to load notifications: ${error.message}`);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadNotifications();
+  }, [user?.id, showError]);
+
   // Handle notification cooldown timer
   useEffect(() => {
     if (lastNotificationTime) {
@@ -85,14 +125,15 @@ const NotificationsPage = () => {
     }
   }, [lastNotificationTime]);
 
-  // Sync local notification settings with user profile
+  // Sync local notification settings with user profile (only on initial load)
   useEffect(() => {
-    if (user) {
+    if (user && !settingsInitialized.current) {
       setNotificationSettings(prev => ({
         ...prev,
         email: user.emailNotifications !== false,
         webPush: user.webPushNotifications !== false
       }));
+      settingsInitialized.current = true;
     }
   }, [user]);
 
@@ -134,26 +175,44 @@ const NotificationsPage = () => {
     }
   };
 
-  const markAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === notificationId 
-          ? { ...notif, read: true }
-          : notif
-      )
-    );
+  const markAsRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId 
+            ? { ...notif, read: true }
+            : notif
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      showError('Failed to mark notification as read');
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead(user.id);
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      showError('Failed to mark all notifications as read');
+    }
   };
 
-  const deleteNotification = (notificationId) => {
-    setNotifications(prev => 
-      prev.filter(notif => notif.id !== notificationId)
-    );
+  const deleteNotification = async (notificationId) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+      setNotifications(prev => 
+        prev.filter(notif => notif.id !== notificationId)
+      );
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      showError('Failed to delete notification');
+    }
   };
 
   const updateSettings = async (key, value) => {
@@ -191,20 +250,20 @@ const NotificationsPage = () => {
   const testNotification = async () => {
     // Check if user email is verified
     if (!user?.emailVerified) {
-      alert('🔒 Email verification required!\n\nYou must verify your email address before testing notifications.\n\nPlease check your email for a verification link or go to your Profile to resend verification.');
+      showError('Email verification required! You must verify your email address before testing notifications. Please check your email for a verification link or go to your Profile to resend verification.');
       return;
     }
 
     // Check rate limiting (1 minute cooldown)
     if (isNotificationCooldown) {
       const timeRemaining = Math.ceil((60000 - (Date.now() - lastNotificationTime)) / 1000);
-      alert(`⏱️ Please wait ${timeRemaining} seconds before testing notifications again.\n\nThis helps prevent spam and ensures proper functionality.`);
+      showWarning(`Please wait ${timeRemaining} seconds before testing notifications again. This helps prevent spam and ensures proper functionality.`);
       return;
     }
 
     // Check if notifications are supported
     if (!('Notification' in window)) {
-      alert('This browser does not support notifications');
+      showError('This browser does not support notifications');
       return;
     }
 
@@ -248,24 +307,32 @@ const NotificationsPage = () => {
           }
         }
         
-        // Show success message with both results
-        const browserSuccess = '✅ Browser notification sent!';
-        const emailStatus = notificationSettings.email 
-          ? (emailResult.success 
-              ? '✅ Email notification sent! (Check console for mock email)'
-              : '❌ Email notification failed')
-          : '⚠️ Email notifications disabled';
+        // Show success message with both results as a single numbered list
+        const messages = [
+          'Browser notification sent!',
+          notificationSettings.email 
+            ? (emailResult.success 
+                ? ' Email notification sent! (Check console for mock email in development)'
+                : ' Email notification failed')
+            : 'Email notifications disabled',
+          'Note: You can test notifications again in 1 minute.'
+        ];
         
-        alert(`${browserSuccess}\n${emailStatus}\n\nNote: You can test notifications again in 1 minute.`);
+        // Create a single toast with numbered list
+        const numberedMessage = messages.map((message, index) => 
+          `${index + 1}) ${message}`
+        ).join('\n');
+        
+        showSuccess(numberedMessage, { showIcon: false });
         
       } catch (error) {
         console.error('Error creating notification:', error);
-        alert('❌ Failed to create notification. Please check your browser settings.');
+        showError('Failed to create notification. Please check your browser settings.');
       }
     } else if (permission === 'denied') {
-      alert('❌ Notifications are blocked. Please enable them in your browser settings:\n\n1. Click the lock icon in your address bar\n2. Allow notifications for this site\n3. Refresh the page and try again');
+      showError('Notifications are blocked. Please enable them in your browser settings: 1. Click the lock icon in your address bar 2. Allow notifications for this site 3. Refresh the page and try again');
     } else {
-      alert('❌ Notification permission denied. Please try again or check your browser settings.');
+      showError('Notification permission denied. Please try again or check your browser settings.');
     }
   };
 
@@ -325,25 +392,33 @@ const NotificationsPage = () => {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-4">Delivery Methods</h3>
                 <div className="space-y-4">
-                  <label className="flex items-center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={notificationSettings.email}
+                      id="email-notifications"
+                      defaultChecked={notificationSettings.email}
                       onChange={(e) => updateSettings('email', e.target.checked)}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                     />
-                    <span className="ml-3 text-gray-700">Email notifications</span>
-                  </label>
+                    <label htmlFor="email-notifications" className="ml-3 text-gray-700 cursor-pointer">
+                      Email notifications
+                    </label>
+                  </div>
                   
-                  <label className="flex items-center">
+                  <div className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={notificationSettings.webPush}
+                      id="web-push-notifications"
+                      defaultChecked={notificationSettings.webPush}
                       onChange={(e) => updateSettings('webPush', e.target.checked)}
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                     />
-                    <span className="ml-3 text-gray-700">Web push notifications</span>
-                  </label>
+                    <label htmlFor="web-push-notifications" className="ml-3 text-gray-700 cursor-pointer">
+                      Web push notifications
+                    </label>
+                  </div>
                   
                 </div>
               </div>
@@ -417,7 +492,7 @@ const NotificationsPage = () => {
                     onClick={() => {
                       setShowSettings(false);
                       // Show a brief confirmation
-                      alert('✅ Notification settings saved successfully!');
+                      showSuccess('Notification settings saved successfully!');
                     }}
                     className="btn-primary"
                   >
@@ -449,7 +524,12 @@ const NotificationsPage = () => {
             )}
           </div>
 
-          {notifications.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <span className="ml-3 text-gray-600">Loading notifications...</span>
+            </div>
+          ) : notifications.length > 0 ? (
             <div className="space-y-4">
               {notifications.map(notification => (
                 <div

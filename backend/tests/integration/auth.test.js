@@ -1,65 +1,38 @@
 const request = require('supertest');
-const express = require('express');
-const authRoutes = require('../../src/routes/auth');
-
-// Create test app
-const createTestApp = () => {
-  const app = express();
-  app.use(express.json());
-  app.use('/api/auth', authRoutes);
-  
-  // Error handling middleware
-  app.use((err, req, res) => {
-    res.status(err.status || 500).json({
-      error: err.message || 'Internal server error'
-    });
-  });
-  
-  return app;
-};
+const { createAuthTestApp } = require('../setup/testApp');
+const { testUsers, assertions, helpers, constants } = require('../setup/testUtils');
 
 describe('Auth Routes', () => {
   let app;
 
   beforeEach(() => {
-    app = createTestApp();
+    app = createAuthTestApp();
   });
 
   describe('POST /api/auth/register', () => {
     test('should register a new user with valid data', async () => {
-      const userData = {
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'Test User',
-        zipCode: '90210'
-      };
+      const userData = helpers.generateTestUser();
 
       const response = await request(app)
         .post('/api/auth/register')
         .send(userData)
-        .expect(201);
+        .expect(constants.HTTP_STATUS.CREATED);
 
-      expect(response.body.user).toBeDefined();
-      expect(response.body.user.email).toBe(userData.email);
-      expect(response.body.user.name).toBe(userData.name);
-      expect(response.body.user.zipCode).toBe(userData.zipCode);
-      expect(response.body.user.usdaZone).toBeDefined();
-      expect(response.body.user.password).toBeUndefined(); // Password should not be returned
+      assertions.expectSuccessResponse(response, constants.HTTP_STATUS.CREATED);
+      assertions.expectUserStructure(response.body.user, userData);
       expect(response.body.token).toBeDefined();
     });
 
     test('should return 400 for invalid email', async () => {
       const invalidData = {
-        email: 'invalid-email',
-        password: 'password123',
-        name: 'Test User',
-        zipCode: '90210'
+        ...testUsers.invalid,
+        email: 'invalid-email'
       };
 
       const response = await request(app)
         .post('/api/auth/register')
         .send(invalidData)
-        .expect(400);
+        .expect(constants.HTTP_STATUS.BAD_REQUEST);
 
       expect(response.body.errors).toBeDefined();
     });

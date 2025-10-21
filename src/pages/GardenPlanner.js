@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useGarden } from '../contexts/GardenContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import PlantCard from '../components/PlantCard';
 import GardenGrid from '../components/GardenGrid';
 import PlantInfoModal from '../components/PlantInfoModal';
 import PlantTaskModal from '../components/PlantTaskModal';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { withPageErrorBoundary } from '../components/PageErrorBoundary';
+import { debugLog } from '../utils/debugLogger';
 // Zone-specific dates are handled in PlantCard and PlantInfoModal components
 
 const GardenPlanner = () => {
@@ -15,6 +18,7 @@ const GardenPlanner = () => {
   const gardenId = searchParams.get('garden');
   const { gardens, plants, addPlantToGarden, movePlantInGarden, removePlantFromGarden, getPlantById } = useGarden();
   const { user } = useAuth();
+  const { showError, showInfo } = useToast();
   const navigate = useNavigate();
   
   const [selectedGarden, setSelectedGarden] = useState(null);
@@ -39,22 +43,24 @@ const GardenPlanner = () => {
     }
   }, [gardenId, gardens, user, navigate]);
 
-  const filteredPlants = plants.filter(plant => {
-    const matchesSearch = plant.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || plant.type === filterType;
-    
-    // Fix zone matching - extract number from zone string like "10a" -> 10
-    let matchesZone = true;
-    if (filterZone === 'zone' && user?.usdaZone) {
-      const userZoneNum = parseInt(user.usdaZone);
-      matchesZone = plant.zoneMin <= userZoneNum && plant.zoneMax >= userZoneNum;
-    }
-    
-    return matchesSearch && matchesType && matchesZone;
-  });
+  const filteredPlants = useMemo(() => {
+    return plants.filter(plant => {
+      const matchesSearch = plant.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === 'all' || plant.type === filterType;
+      
+      // Fix zone matching - extract number from zone string like "10a" -> 10
+      let matchesZone = true;
+      if (filterZone === 'zone' && user?.usdaZone) {
+        const userZoneNum = parseInt(user.usdaZone);
+        matchesZone = plant.zoneMin <= userZoneNum && plant.zoneMax >= userZoneNum;
+      }
+      
+      return matchesSearch && matchesType && matchesZone;
+    });
+  }, [plants, searchTerm, filterType, filterZone, user?.usdaZone]);
 
   // Debug logging
-  console.log('Garden Planner Debug:', {
+  debugLog('Garden Planner Debug:', {
     plantsCount: plants.length,
     filteredPlantsCount: filteredPlants.length,
     searchTerm,
@@ -70,13 +76,13 @@ const GardenPlanner = () => {
     const currentGarden = gardens.find(g => g.id === selectedGarden.id);
     if (!currentGarden) return;
     
-    console.log('Plant dropped:', plant, 'at position:', x, y);
-    console.log('Current garden from context:', currentGarden);
+    debugLog('Plant dropped:', { plant, position: { x, y } });
+    debugLog('Current garden from context:', currentGarden);
     
     // Check if position is already occupied using current data
     const existingPlant = currentGarden.layout.plants.find(p => p.x === x && p.y === y);
     if (existingPlant) {
-      alert('This position is already occupied!');
+      showError('This position is already occupied!');
       return;
     }
 
@@ -95,15 +101,15 @@ const GardenPlanner = () => {
     const currentGarden = gardens.find(g => g.id === selectedGarden.id);
     if (!currentGarden) return;
     
-    console.log('Plant move requested:', plantedItem, 'to position:', x, y);
+    debugLog('Plant move requested:', { plantedItem, position: { x, y } });
     
     movePlantInGarden(currentGarden.id, plantedItem, { x, y });
   };
 
   const handleEmptySlotClick = () => {
-    // For now, we'll just show an alert. In a full implementation, 
+    // For now, we'll just show an info message. In a full implementation, 
     // this would open a plant selection modal
-    alert(`Empty slot. Drag a plant from the sidebar to add it here!`);
+    showInfo('Empty slot. Drag a plant from the sidebar to add it here!');
   };
 
   const handleRemovePlant = (plant) => {
@@ -179,7 +185,7 @@ const GardenPlanner = () => {
               <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
                 <p>Plants loaded: {plants.length}</p>
                 <p>Filtered plants: {filteredPlants.length}</p>
-                <p>Search: "{searchTerm}"</p>
+                <p>Search: &quot;{searchTerm}&quot;</p>
                 <p>Type filter: {filterType}</p>
                 <p>Zone filter: {filterZone}</p>
               </div>
@@ -308,4 +314,4 @@ const GardenPlanner = () => {
   );
 };
 
-export default GardenPlanner;
+export default withPageErrorBoundary(GardenPlanner);

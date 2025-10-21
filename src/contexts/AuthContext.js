@@ -12,6 +12,8 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 import { getUSDAZone } from '../utils/usdaZones';
+import { debugLog, errorLog } from '../utils/debugLogger';
+import { validateName, validateZipCode, sanitizeString } from '../utils/validation';
 
 const AuthContext = createContext();
 
@@ -56,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('🔥 Using Firebase authentication (emulators in dev, cloud in prod)');
+    debugLog('🔥 Using Firebase authentication (emulators in dev, cloud in prod)');
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -70,7 +72,8 @@ export const AuthProvider = ({ children }) => {
             id: firebaseUser.uid,
             email: firebaseUser.email,
             name: userData.name || firebaseUser.displayName || 'User',
-            emailVerified: firebaseUser.emailVerified,
+            // Use Firestore emailVerified status as source of truth, fallback to Firebase Auth
+            emailVerified: userData.emailVerified === true ? true : (userData.emailVerified === false ? false : firebaseUser.emailVerified),
             zipCode: userData.zipCode || '',
             usdaZone: userData.usdaZone || '',
             emailNotifications: userData.emailNotifications !== false,
@@ -79,7 +82,7 @@ export const AuthProvider = ({ children }) => {
           
           setUser(user);
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          errorLog('Error fetching user data:', error);
           setUser(null);
         }
       } else {
@@ -116,27 +119,40 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true };
     } catch (error) {
-      console.error('Firebase login error:', error);
+      errorLog('Firebase login error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
 
   const signup = async (email, password, name, zipCode) => {
     try {
+      // Validate and sanitize inputs before creating user
+      const nameValidation = validateName(name);
+      const zipValidation = validateZipCode(zipCode);
+      
+      if (!nameValidation.isValid) {
+        return { success: false, error: nameValidation.error };
+      }
+      
+      if (!zipValidation.isValid) {
+        return { success: false, error: zipValidation.error };
+      }
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
-      // Update the user's display name
-      if (name) {
-        await updateFirebaseProfile(firebaseUser, { displayName: name });
+      // Use sanitized data for display name
+      const sanitizedName = nameValidation.sanitized;
+      if (sanitizedName) {
+        await updateFirebaseProfile(firebaseUser, { displayName: sanitizedName });
       }
       
-      // Create user document in Firestore
+      // Create user document in Firestore with sanitized and validated data
       const userData = {
-        name: name || email.split('@')[0] || 'User',
-        email: email,
-        zipCode: zipCode || '',
-        usdaZone: getUSDAZone(zipCode || '90210'),
+        name: sanitizedName || sanitizeString(email.split('@')[0]) || 'User',
+        email: firebaseUser.email, // Use Firebase's validated email
+        zipCode: zipValidation.sanitized,
+        usdaZone: getUSDAZone(zipValidation.sanitized || '90210'),
         emailNotifications: true,
         webPushNotifications: true,
         createdAt: new Date().toISOString()
@@ -161,7 +177,7 @@ export const AuthProvider = ({ children }) => {
       setUser(user);
       return { success: true, user };
     } catch (error) {
-      console.error('Firebase signup error:', error);
+      errorLog('Firebase signup error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -172,7 +188,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       return { success: true };
     } catch (error) {
-      console.error('Firebase logout error:', error);
+      errorLog('Firebase logout error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -183,21 +199,47 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'No user logged in' };
       }
 
-      // Update USDA zone if zipCode is being updated
-      if (updates.zipCode && updates.zipCode !== user.zipCode) {
-        updates.usdaZone = getUSDAZone(updates.zipCode);
+      // Validate and sanitize updates
+      const sanitizedUpdates = {};
+      
+      if (updates.name !== undefined) {
+        const nameValidation = validateName(updates.name);
+        if (!nameValidation.isValid) {
+          return { success: false, error: nameValidation.error };
+        }
+        sanitizedUpdates.name = nameValidation.sanitized;
+      }
+      
+      if (updates.zipCode !== undefined) {
+        const zipValidation = validateZipCode(updates.zipCode);
+        if (!zipValidation.isValid) {
+          return { success: false, error: zipValidation.error };
+        }
+        sanitizedUpdates.zipCode = zipValidation.sanitized;
+        sanitizedUpdates.usdaZone = getUSDAZone(zipValidation.sanitized);
+      }
+      
+      // Copy over other safe updates (booleans, etc.)
+      if (updates.emailNotifications !== undefined) {
+        sanitizedUpdates.emailNotifications = Boolean(updates.emailNotifications);
+      }
+      if (updates.webPushNotifications !== undefined) {
+        sanitizedUpdates.webPushNotifications = Boolean(updates.webPushNotifications);
+      }
+      if (updates.emailVerified !== undefined) {
+        sanitizedUpdates.emailVerified = Boolean(updates.emailVerified);
       }
 
       // Update user document in Firestore
-      await updateDoc(doc(db, 'users', user.id), updates);
+      await updateDoc(doc(db, 'users', user.id), sanitizedUpdates);
 
       // Update local user state
-      const updatedUser = { ...user, ...updates };
+      const updatedUser = { ...user, ...sanitizedUpdates };
       setUser(updatedUser);
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase profile update error:', error);
+      errorLog('Firebase profile update error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -220,7 +262,7 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase email update error:', error);
+      errorLog('Firebase email update error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
     }
   };
@@ -236,8 +278,32 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Firebase email verification error:', error);
+      errorLog('Firebase email verification error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
+    }
+  };
+
+  const markEmailAsVerified = async () => {
+    try {
+      if (!user || !auth.currentUser) {
+        return { success: false, error: 'No user logged in' };
+      }
+
+      // Update email verification status in Firestore
+      await updateDoc(doc(db, 'users', user.id), { 
+        emailVerified: true,
+        emailVerifiedAt: new Date().toISOString()
+      });
+
+      // Update local user state
+      const updatedUser = { ...user, emailVerified: true };
+      setUser(updatedUser);
+      
+      debugLog('Email marked as verified in Firestore');
+      return { success: true };
+    } catch (error) {
+      errorLog('Error marking email as verified:', error);
+      return { success: false, error: 'Failed to update email verification status' };
     }
   };
 
@@ -246,8 +312,41 @@ export const AuthProvider = ({ children }) => {
       await sendPasswordResetEmail(auth, email);
       return { success: true, message: 'Password reset email sent successfully' };
     } catch (error) {
-      console.error('Firebase password reset error:', error);
+      errorLog('Firebase password reset error:', error);
       return { success: false, error: getFirebaseErrorMessage(error.code) };
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      if (!auth.currentUser) {
+        return { success: false, error: 'No user logged in' };
+      }
+
+      // Reload the user to get the latest email verification status
+      await auth.currentUser.reload();
+      
+      // Get the updated user data
+      const firebaseUser = auth.currentUser;
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      
+      const updatedUser = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: userData.name || firebaseUser.displayName || 'User',
+        emailVerified: firebaseUser.emailVerified,
+        zipCode: userData.zipCode || '',
+        usdaZone: userData.usdaZone || '',
+        emailNotifications: userData.emailNotifications !== false,
+        webPushNotifications: userData.webPushNotifications !== false
+      };
+      
+      setUser(updatedUser);
+      return { success: true, user: updatedUser };
+    } catch (error) {
+      errorLog('Error refreshing user:', error);
+      return { success: false, error: 'Failed to refresh user data' };
     }
   };
 
@@ -260,7 +359,9 @@ export const AuthProvider = ({ children }) => {
     updateProfile,
     updateEmail,
     verifyEmail,
-    resetPassword
+    markEmailAsVerified,
+    resetPassword,
+    refreshUser
   };
 
   return (

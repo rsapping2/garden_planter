@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import EmailVerification from '../components/EmailVerification';
 import { getUSDAZone } from '../utils/usdaZones';
+import { debugLog } from '../utils/debugLogger';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, markEmailAsVerified, loading } = useAuth();
   const navigate = useNavigate();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +22,18 @@ const ProfilePage = () => {
   const [pendingEmail, setPendingEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Update form data when user data becomes available
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        zipCode: user.zipCode || '',
+        usdaZone: user.usdaZone || ''
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,11 +91,16 @@ const ProfilePage = () => {
         });
         setMessage('Email updated and verified successfully! Email notifications have been disabled - you can re-enable them in notification settings.');
       } else {
-        // Just verifying the current email
-        await updateProfile({ 
-          emailVerified: true
-        });
-        setMessage('Email verified successfully! You can now use all notification features.');
+        // Just verifying the current email - use the new function to persist in Firestore
+        debugLog('Marking email as verified...');
+        const result = await markEmailAsVerified();
+        debugLog('markEmailAsVerified result:', result);
+        if (result.success) {
+          setMessage('Email verified successfully! You can now use all notification features.');
+        } else {
+          setMessage('Failed to update email verification status. Please try again.');
+          return;
+        }
       }
       
       setShowEmailVerification(false);
@@ -95,7 +113,7 @@ const ProfilePage = () => {
 
   const handleResendEmail = async () => {
     // In a real app, this would call your backend to resend verification email
-    console.log('Resending verification email to:', pendingEmail);
+    debugLog('Resending verification email to:', pendingEmail);
   };
 
   const handleEmailChangeConfirm = () => {
@@ -163,6 +181,19 @@ const ProfilePage = () => {
     );
   }
 
+  // Show loading state while user data is being fetched
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

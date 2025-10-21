@@ -1,8 +1,32 @@
 import config from '../config/environment';
+import { debugLog } from '../utils/debugLogger';
 
 class EmailService {
   constructor() {
     this.pendingVerifications = new Map(); // Store pending verification codes
+    // Load existing verifications from localStorage
+    this.loadVerifications();
+  }
+
+  loadVerifications() {
+    try {
+      const stored = localStorage.getItem('emailVerifications');
+      if (stored) {
+        const verifications = JSON.parse(stored);
+        this.pendingVerifications = new Map(Object.entries(verifications));
+      }
+    } catch (error) {
+      console.error('Error loading verifications from localStorage:', error);
+    }
+  }
+
+  saveVerifications() {
+    try {
+      const verifications = Object.fromEntries(this.pendingVerifications);
+      localStorage.setItem('emailVerifications', JSON.stringify(verifications));
+    } catch (error) {
+      console.error('Error saving verifications to localStorage:', error);
+    }
   }
 
   /**
@@ -20,8 +44,11 @@ class EmailService {
           timestamp: Date.now(),
           attempts: 0
         });
+        
+        // Save to localStorage for persistence
+        this.saveVerifications();
 
-        console.log(`[MOCK EMAIL] Verification code for ${email}: ${verificationCode}`);
+        debugLog(`[MOCK EMAIL] Verification code for ${email}: ${verificationCode}`);
         
         return {
           success: true,
@@ -29,23 +56,24 @@ class EmailService {
           ...(config.showDemoCodes && { demoCode: verificationCode })
         };
       } else {
-        // Real implementation - call your backend API
-        const response = await fetch(`${config.emailServiceUrl}/send-verification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
+        // Production fallback - email service not configured
+        const verificationCode = this.generateVerificationCode();
+        this.pendingVerifications.set(email, {
+          code: verificationCode,
+          timestamp: Date.now(),
+          attempts: 0
         });
+        
+        // Save to localStorage for persistence
+        this.saveVerifications();
 
-        if (!response.ok) {
-          throw new Error('Failed to send verification email');
-        }
-
-        await response.json();
+        // Show production popup with temporary code
+        this.showProductionVerificationPopup(email, verificationCode);
+        
         return {
           success: true,
-          message: 'Verification email sent successfully'
+          message: 'Verification code generated (see popup)',
+          demoCode: verificationCode
         };
       }
     } catch (error) {
@@ -98,6 +126,7 @@ class EmailService {
         // Verify code
         if (stored.code === code) {
           this.pendingVerifications.delete(email);
+          this.saveVerifications(); // Save the deletion
           return {
             success: true,
             message: 'Email verified successfully!'
@@ -105,6 +134,7 @@ class EmailService {
         } else {
           // Increment attempts
           stored.attempts += 1;
+          this.saveVerifications(); // Save the updated attempts
           this.pendingVerifications.set(email, stored);
           
           return {
@@ -113,24 +143,54 @@ class EmailService {
           };
         }
       } else {
-        // Real implementation - call your backend API
-        const response = await fetch(`${config.emailServiceUrl}/verify-email`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, code }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Verification failed');
+        // Production fallback - use same logic as mock but without demo codes
+        const stored = this.pendingVerifications.get(email);
+        
+        if (!stored) {
+          return {
+            success: false,
+            message: 'No verification code found. Please request a new one.'
+          };
         }
 
-        const result = await response.json();
-        return {
-          success: result.success,
-          message: result.message || 'Email verified successfully!'
-        };
+        // Check if code is expired (10 minutes)
+        const isExpired = Date.now() - stored.timestamp > 10 * 60 * 1000;
+        if (isExpired) {
+          this.pendingVerifications.delete(email);
+          return {
+            success: false,
+            message: 'Verification code has expired. Please request a new one.'
+          };
+        }
+
+        // Check attempts (max 3)
+        if (stored.attempts >= 3) {
+          this.pendingVerifications.delete(email);
+          return {
+            success: false,
+            message: 'Too many failed attempts. Please request a new verification code.'
+          };
+        }
+
+        // Verify code
+        if (stored.code === code) {
+          this.pendingVerifications.delete(email);
+          this.saveVerifications(); // Save the deletion
+          return {
+            success: true,
+            message: 'Email verified successfully!'
+          };
+        } else {
+          // Increment attempts
+          stored.attempts += 1;
+          this.saveVerifications(); // Save the updated attempts
+          this.pendingVerifications.set(email, stored);
+          
+          return {
+            success: false,
+            message: `Invalid verification code. ${3 - stored.attempts} attempts remaining.`
+          };
+        }
       }
     } catch (error) {
       console.error('Email verification error:', error);
@@ -150,9 +210,9 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Test notification sent to ${email}`);
-        console.log('Subject: 🌱 Garden Planner Test Notification');
-        console.log('Body: This is a test notification from Garden Planner! Your email notifications are working correctly.');
+        debugLog(`[MOCK EMAIL] Test notification sent to ${email}`);
+        debugLog('Subject: 🌱 Garden Planner Test Notification');
+        debugLog('Body: This is a test notification from Garden Planner! Your email notifications are working correctly.');
         
         return {
           success: true,
@@ -214,11 +274,11 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Task reminder sent to ${email}`);
-        console.log(`Subject: 🌱 Garden Reminder: ${task.title}`);
-        console.log(`Task: ${task.title} (${task.type})`);
-        console.log(`Due: ${task.dueDate}`);
-        console.log(`Garden: ${task.gardenName || 'Unknown'}`);
+        debugLog(`[MOCK EMAIL] Task reminder sent to ${email}`);
+        debugLog(`Subject: 🌱 Garden Reminder: ${task.title}`);
+        debugLog(`Task: ${task.title} (${task.type})`);
+        debugLog(`Due: ${task.dueDate}`);
+        debugLog(`Garden: ${task.gardenName || 'Unknown'}`);
         
         return {
           success: true,
@@ -300,10 +360,10 @@ class EmailService {
     try {
       if (config.enableMockEmail) {
         // Mock implementation - log to console
-        console.log(`[MOCK EMAIL] Garden summary sent to ${email}`);
-        console.log(`Subject: 🌱 Your Garden Summary - ${new Date().toLocaleDateString()}`);
-        console.log(`Upcoming tasks: ${summary.upcomingTasks?.length || 0}`);
-        console.log(`Gardens: ${summary.gardens?.length || 0}`);
+        debugLog(`[MOCK EMAIL] Garden summary sent to ${email}`);
+        debugLog(`Subject: 🌱 Your Garden Summary - ${new Date().toLocaleDateString()}`);
+        debugLog(`Upcoming tasks: ${summary.upcomingTasks?.length || 0}`);
+        debugLog(`Gardens: ${summary.gardens?.length || 0}`);
         
         return {
           success: true,
@@ -365,6 +425,107 @@ class EmailService {
       return this.pendingVerifications.get(email) || null;
     }
     return null;
+  }
+
+  /**
+   * Show production verification popup with temporary code
+   * @param {string} email - Email address
+   * @param {string} code - Verification code
+   */
+  showProductionVerificationPopup(email, code) {
+    // Create popup element
+    const popup = document.createElement('div');
+    popup.id = 'email-verification-popup';
+    popup.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    `;
+
+    popup.innerHTML = `
+      <div style="
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      ">
+        <div style="font-size: 48px; margin-bottom: 16px;">📧</div>
+        <h2 style="
+          font-size: 24px;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0 0 8px 0;
+        ">Email Service Not Connected</h2>
+        <p style="
+          color: #6b7280;
+          margin: 0 0 24px 0;
+          line-height: 1.5;
+        ">
+          Real email verification is not configured for production.<br>
+          Use this temporary verification code:
+        </p>
+        
+        <div style="
+          background: #f3f4f6;
+          border: 2px dashed #d1d5db;
+          border-radius: 8px;
+          padding: 24px;
+          margin: 24px 0;
+        ">
+          <div style="
+            font-size: 32px;
+            font-weight: 700;
+            color: #16a34a;
+            letter-spacing: 4px;
+            font-family: 'Courier New', monospace;
+          ">${code}</div>
+        </div>
+        
+        <p style="
+          color: #6b7280;
+          font-size: 14px;
+          margin: 16px 0 24px 0;
+        ">
+          This code will expire in 10 minutes.<br>
+          Copy and paste it into the verification form.
+        </p>
+        
+        <button onclick="document.getElementById('email-verification-popup').remove()" style="
+          background: #16a34a;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 12px 24px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        " onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+          Got it!
+        </button>
+      </div>
+    `;
+
+    // Add to page
+    document.body.appendChild(popup);
+
+    // Auto-remove after 30 seconds
+    setTimeout(() => {
+      if (document.getElementById('email-verification-popup')) {
+        document.getElementById('email-verification-popup').remove();
+      }
+    }, 30000);
   }
 }
 

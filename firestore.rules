@@ -1,30 +1,141 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Helper functions for validation
+    function isValidString(str, minLen, maxLen) {
+      return str is string && str.size() >= minLen && str.size() <= maxLen;
+    }
+    
+    function isValidEmail(email) {
+      return email is string && 
+             email.size() > 0 && 
+             email.size() <= 254 &&
+             email.matches('.*@.*\\..*');
+    }
+    
+    function isValidZipCode(zip) {
+      return zip is string && 
+             zip.size() == 5 && 
+             zip.matches('[0-9]{5}');
+    }
+    
+    function isValidBoolean(value) {
+      return value is bool;
+    }
+    
     // Users can read and write their own user document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Validate user data on create
+      allow create: if request.auth != null && 
+        request.auth.uid == userId &&
+        isValidString(request.resource.data.name, 2, 50) &&
+        isValidEmail(request.resource.data.email) &&
+        isValidZipCode(request.resource.data.zipCode) &&
+        isValidString(request.resource.data.usdaZone, 1, 10) &&
+        isValidBoolean(request.resource.data.emailNotifications) &&
+        isValidBoolean(request.resource.data.webPushNotifications) &&
+        request.resource.data.createdAt is string;
+      
+      // Validate user data on update
+      allow update: if request.auth != null && 
+        request.auth.uid == userId &&
+        // Only allow updating specific fields
+        (!('name' in request.resource.data) || isValidString(request.resource.data.name, 2, 50)) &&
+        (!('zipCode' in request.resource.data) || isValidZipCode(request.resource.data.zipCode)) &&
+        (!('usdaZone' in request.resource.data) || isValidString(request.resource.data.usdaZone, 1, 10)) &&
+        (!('emailNotifications' in request.resource.data) || isValidBoolean(request.resource.data.emailNotifications)) &&
+        (!('webPushNotifications' in request.resource.data) || isValidBoolean(request.resource.data.webPushNotifications)) &&
+        (!('emailVerified' in request.resource.data) || isValidBoolean(request.resource.data.emailVerified));
     }
     
     // Users can read and write their own gardens
     match /gardens/{gardenId} {
-      allow read, write: if request.auth != null && 
+      allow read: if request.auth != null && 
         request.auth.uid == resource.data.userId;
+      
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.userId;
+        request.auth.uid == request.resource.data.userId &&
+        isValidString(request.resource.data.name, 2, 50) &&
+        isValidString(request.resource.data.size, 1, 20) &&
+        // Description is optional but must be valid if present
+        (!('description' in request.resource.data) || isValidString(request.resource.data.description, 0, 500)) &&
+        request.resource.data.layout is map &&
+        request.resource.data.layout.width is int &&
+        request.resource.data.layout.height is int &&
+        request.resource.data.layout.plants is list;
+      
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        // Ensure userId cannot be changed
+        request.resource.data.userId == resource.data.userId &&
+        (!('name' in request.resource.data) || isValidString(request.resource.data.name, 2, 50)) &&
+        (!('description' in request.resource.data) || isValidString(request.resource.data.description, 0, 500));
+      
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
     }
     
     // Users can read and write their own tasks
     match /tasks/{taskId} {
-      allow read, write: if request.auth != null && 
+      allow read: if request.auth != null && 
         request.auth.uid == resource.data.userId;
+      
       allow create: if request.auth != null && 
-        request.auth.uid == request.resource.data.userId;
+        request.auth.uid == request.resource.data.userId &&
+        isValidString(request.resource.data.title, 2, 100) &&
+        isValidString(request.resource.data.type, 1, 50) &&
+        isValidString(request.resource.data.dueDate, 8, 20) &&
+        isValidBoolean(request.resource.data.completed) &&
+        // Notes are optional but must be valid if present
+        (!('notes' in request.resource.data) || isValidString(request.resource.data.notes, 0, 500)) &&
+        // gardenId and gardenName are required
+        isValidString(request.resource.data.gardenId, 1, 100) &&
+        isValidString(request.resource.data.gardenName, 1, 100);
+      
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        // Ensure userId cannot be changed
+        request.resource.data.userId == resource.data.userId &&
+        (!('title' in request.resource.data) || isValidString(request.resource.data.title, 2, 100)) &&
+        (!('notes' in request.resource.data) || isValidString(request.resource.data.notes, 0, 500)) &&
+        (!('completed' in request.resource.data) || isValidBoolean(request.resource.data.completed));
+      
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
     }
     
     // Plants are read-only for all authenticated users
     match /plants/{plantId} {
       allow read: if request.auth != null;
+    }
+    
+    // Users can read and write their own notifications
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId &&
+        isValidString(request.resource.data.title, 1, 200) &&
+        isValidString(request.resource.data.message, 1, 1000) &&
+        isValidString(request.resource.data.type, 1, 50) &&
+        isValidBoolean(request.resource.data.read) &&
+        request.resource.data.timestamp is timestamp &&
+        // Priority is optional but must be valid if present
+        (!('priority' in request.resource.data) || isValidString(request.resource.data.priority, 1, 20));
+      
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        // Ensure userId cannot be changed
+        request.resource.data.userId == resource.data.userId &&
+        // Typically only 'read' status is updated
+        (!('read' in request.resource.data) || isValidBoolean(request.resource.data.read));
+      
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
     }
   }
 }
