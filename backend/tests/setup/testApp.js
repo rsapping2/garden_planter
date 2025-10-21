@@ -26,8 +26,7 @@ const createTestApp = ({ routePath, routes, middleware = [] } = {}) => {
   }
   
   // Error handling middleware
-  // eslint-disable-next-line no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, _req, res, _next) => {
     console.error('Test error:', err);
     res.status(err.status || 500).json({
       error: err.message || 'Internal server error'
@@ -35,7 +34,7 @@ const createTestApp = ({ routePath, routes, middleware = [] } = {}) => {
   });
   
   // 404 handler
-  app.use('*', (req, res) => {
+  app.use('*', (_req, res) => {
     res.status(404).json({
       error: 'Route not found'
     });
@@ -86,8 +85,7 @@ const createMultiRouteTestApp = (routeGroups) => {
   });
   
   // Error handling middleware
-  // eslint-disable-next-line no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, _req, res, _next) => {
     console.error('Test error:', err);
     res.status(err.status || 500).json({
       error: err.message || 'Internal server error'
@@ -95,7 +93,7 @@ const createMultiRouteTestApp = (routeGroups) => {
   });
   
   // 404 handler
-  app.use('*', (req, res) => {
+  app.use('*', (_req, res) => {
     res.status(404).json({
       error: 'Route not found'
     });
