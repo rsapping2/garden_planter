@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useGarden } from '../contexts/GardenContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,19 +43,21 @@ const GardenPlanner = () => {
     }
   }, [gardenId, gardens, user, navigate]);
 
-  const filteredPlants = plants.filter(plant => {
-    const matchesSearch = plant.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || plant.type === filterType;
-    
-    // Fix zone matching - extract number from zone string like "10a" -> 10
-    let matchesZone = true;
-    if (filterZone === 'zone' && user?.usdaZone) {
-      const userZoneNum = parseInt(user.usdaZone);
-      matchesZone = plant.zoneMin <= userZoneNum && plant.zoneMax >= userZoneNum;
-    }
-    
-    return matchesSearch && matchesType && matchesZone;
-  });
+  const filteredPlants = useMemo(() => {
+    return plants.filter(plant => {
+      const matchesSearch = plant.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === 'all' || plant.type === filterType;
+      
+      // Fix zone matching - extract number from zone string like "10a" -> 10
+      let matchesZone = true;
+      if (filterZone === 'zone' && user?.usdaZone) {
+        const userZoneNum = parseInt(user.usdaZone);
+        matchesZone = plant.zoneMin <= userZoneNum && plant.zoneMax >= userZoneNum;
+      }
+      
+      return matchesSearch && matchesType && matchesZone;
+    });
+  }, [plants, searchTerm, filterType, filterZone, user?.usdaZone]);
 
   // Debug logging
   debugLog('Garden Planner Debug:', {
