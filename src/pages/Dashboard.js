@@ -31,7 +31,7 @@ const Dashboard = () => {
     }
   }, [user, navigate]);
 
-  const handleCreateGarden = (e) => {
+  const handleCreateGarden = async (e) => {
     e.preventDefault();
     setHasSubmitted(true);
     
@@ -49,7 +49,7 @@ const Dashboard = () => {
     }
     
     try {
-      const newGarden = createGarden({
+      const newGarden = await createGarden({
         name: validation.sanitized,
         size: '3x6',
         description: `A ${validation.sanitized} garden`
@@ -70,10 +70,10 @@ const Dashboard = () => {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDeleteGarden = () => {
+  const confirmDeleteGarden = async () => {
     if (gardenToDelete) {
       try {
-        deleteGarden(gardenToDelete.id);
+        await deleteGarden(gardenToDelete.id);
         showSuccess(`Garden "${gardenToDelete.name}" deleted successfully!`);
         debugLog('Deleted garden:', gardenToDelete.id);
       } catch (error) {

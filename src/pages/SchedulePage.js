@@ -377,7 +377,7 @@ const SchedulePage = () => {
                 {(() => {
                   const statusText = filterStatus === 'all' ? 'All Tasks' : 
                     filterStatus === 'completed' ? 'Completed Tasks' : 'Pending Tasks';
-                  const gardenText = filterGarden === 'all' ? '' : gardens.find(g => g.id === filterGarden)?.name || 'Garden';
+                  const gardenText = filterGarden === 'all' ? '' : gardens.find(g => g.id === filterGarden)?.name || 'Unknown Garden';
                   const taskText = filterTaskType === 'all' ? '' : `${filterTaskType.charAt(0).toUpperCase() + filterTaskType.slice(1)}`;
                   
                   // Build title based on active filters

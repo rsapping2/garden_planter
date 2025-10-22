@@ -226,7 +226,7 @@ describe('validateGardenName', () => {
       'Vegetable Garden',
       'My Garden',
       "Grandma's Garden",
-      'Garden-2024',
+      'Garden-2025',
       'Herb Garden #1'
     ];
     
