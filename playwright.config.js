@@ -10,6 +10,8 @@ module.exports = defineConfig({
   fullyParallel: false,
   /* Reuse browser context between tests in the same file */
   preserveOutput: 'always',
+  /* Global setup for shared test user */
+  globalSetup: require.resolve('./tests/e2e/global-setup.js'),
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */

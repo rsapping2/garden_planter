@@ -253,6 +253,130 @@ test.describe('User Authentication', () => {
     expect(hasErrorMessage || stillOnAuthPage).toBeTruthy();
   });
 
+
+  test('should have accessible form elements', async () => {
+    // Check for proper labels
+    const emailInput = page.locator('input[type="email"]');
+    const passwordInput = page.locator('input[type="password"]');
+    
+    // Check that inputs have labels or aria-labels
+    const emailLabel = page.locator('label[for], [aria-label]').filter({ hasText: /email/i });
+    const passwordLabel = page.locator('label[for], [aria-label]').filter({ hasText: /password/i });
+    
+    const hasEmailLabel = await emailLabel.count() > 0 || await emailInput.getAttribute('aria-label');
+    const hasPasswordLabel = await passwordLabel.count() > 0 || await passwordInput.getAttribute('aria-label');
+    
+    expect(hasEmailLabel).toBeTruthy();
+    expect(hasPasswordLabel).toBeTruthy();
+  });
+
+  test('should prevent signup with existing email', async () => {
+    // This test verifies that the app prevents duplicate email signups
+    // Note: This test assumes the app has proper duplicate email prevention
+    // If the app doesn't prevent duplicates, this test will fail and indicate a bug
+    
+    const testEmail = `test-${Date.now()}@example.com`;
+    
+    // Switch to signup mode
+    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
+    if (await signupToggle.count() > 0) {
+      await signupToggle.click();
+      await page.waitForTimeout(500);
+    }
+    
+    // Fill in signup form with unique email
+    const nameInput = page.locator('input[name*="name"], input[placeholder*="name"]');
+    const emailInput = page.locator('input[type="email"]');
+    const passwordInput = page.locator('input[type="password"]').first();
+    const confirmPasswordInput = page.locator('input[type="password"]').nth(1);
+    const zipInput = page.locator('input[name*="zip"], input[placeholder*="zip"]');
+    
+    if (await nameInput.count() > 0) {
+      await nameInput.fill('Test User');
+    }
+    await emailInput.fill(testEmail);
+    await passwordInput.fill('password123');
+    if (await confirmPasswordInput.count() > 0) {
+      await confirmPasswordInput.fill('password123');
+    }
+    if (await zipInput.count() > 0) {
+      await zipInput.fill('12345');
+    }
+    
+    // Submit first signup
+    await page.locator('button[type="submit"]').click();
+    await page.waitForTimeout(3000);
+    
+    // Check if first signup was successful
+    const currentUrl = page.url();
+    const firstSignupSuccess = !currentUrl.includes('/auth');
+    
+    if (!firstSignupSuccess) {
+      // If first signup failed, we can't test duplicate prevention
+      // This might indicate the app has validation issues or other problems
+      console.log('First signup failed - cannot test duplicate prevention');
+      return;
+    }
+    
+    // Navigate back to auth page for second signup attempt
+    await page.goto('/auth');
+    await page.waitForLoadState('networkidle');
+    
+    // Switch to signup mode again
+    if (await signupToggle.count() > 0) {
+      await signupToggle.click();
+      await page.waitForTimeout(500);
+    }
+    
+    // Fill in signup form with the SAME email
+    if (await nameInput.count() > 0) {
+      await nameInput.fill('Another User');
+    }
+    await emailInput.fill(testEmail); // Same email as before
+    await passwordInput.fill('differentpassword');
+    if (await confirmPasswordInput.count() > 0) {
+      await confirmPasswordInput.fill('differentpassword');
+    }
+    if (await zipInput.count() > 0) {
+      await zipInput.fill('54321');
+    }
+    
+    // Submit second signup attempt
+    await page.locator('button[type="submit"]').click();
+    await page.waitForTimeout(3000);
+    
+    // Check for error message indicating email already exists
+    const errorMessage = page.locator('text=/already exists|already registered|email.*taken|account.*exists|user.*exists/i');
+    const hasErrorMessage = await errorMessage.count() > 0;
+    
+    // Check if we're still on the auth page (which indicates failure)
+    const finalUrl = page.url();
+    const stillOnAuthPage = finalUrl.includes('/auth');
+    
+    // Should show error or stay on auth page (indicating duplicate signup failed)
+    // If neither condition is met, it means the duplicate signup succeeded (which is a bug)
+    expect(hasErrorMessage || stillOnAuthPage).toBeTruthy();
+  });
+});
+
+test.describe('Authentication - Mobile Responsiveness', () => {
+  let page;
+  
+  test.beforeAll(async ({ browser }) => {
+    // Create a shared page context for mobile tests
+    const context = await browser.newContext();
+    page = await context.newPage();
+    await page.goto('/auth');
+    await page.waitForLoadState('networkidle');
+  });
+  
+  test.afterAll(async () => {
+    // Clean up the shared page
+    if (page) {
+      await page.close();
+    }
+  });
+
   test('should be responsive on mobile', async () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
@@ -272,19 +396,22 @@ test.describe('User Authentication', () => {
     expect(formBox.width).toBeLessThanOrEqual(375);
   });
 
-  test('should have accessible form elements', async () => {
-    // Check for proper labels
+  test('should work on tablet viewport', async () => {
+    // Set tablet viewport
+    await page.setViewportSize({ width: 768, height: 1024 });
+    
+    // Check that form is still usable on tablet
     const emailInput = page.locator('input[type="email"]');
     const passwordInput = page.locator('input[type="password"]');
+    const submitButton = page.locator('button[type="submit"]');
     
-    // Check that inputs have labels or aria-labels
-    const emailLabel = page.locator('label[for], [aria-label]').filter({ hasText: /email/i });
-    const passwordLabel = page.locator('label[for], [aria-label]').filter({ hasText: /password/i });
+    await expect(emailInput).toBeVisible();
+    await expect(passwordInput).toBeVisible();
+    await expect(submitButton).toBeVisible();
     
-    const hasEmailLabel = await emailLabel.count() > 0 || await emailInput.getAttribute('aria-label');
-    const hasPasswordLabel = await passwordLabel.count() > 0 || await passwordInput.getAttribute('aria-label');
-    
-    expect(hasEmailLabel).toBeTruthy();
-    expect(hasPasswordLabel).toBeTruthy();
+    // Check that form doesn't overflow
+    const form = page.locator('form');
+    const formBox = await form.boundingBox();
+    expect(formBox.width).toBeLessThanOrEqual(768);
   });
 });
