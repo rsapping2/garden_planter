@@ -28,6 +28,11 @@
     "test:coverage": "react-scripts test --coverage --watchAll=false --passWithNoTests",
     "test:unit": "react-scripts test --testPathPattern=tests/unit",
     "test:integration": "react-scripts test --testPathPattern=tests/integration",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:prod": "PLAYWRIGHT_BASE_URL=https://your-production-url.com playwright test",
+    "test:e2e:install": "playwright install",
     "eject": "react-scripts eject",
     "emulators": "npx firebase emulators:start --only auth,firestore",
     "dev": "npm start"
@@ -52,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "autoprefixer": "^10.4.14",
     "concurrently": "^9.2.1",
