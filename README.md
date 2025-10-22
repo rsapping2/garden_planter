@@ -136,6 +136,30 @@ npm run test:watch
 
 **Note**: Backend tests are currently skipped as the API implementation is pending. See `backend/tests/STATUS.md` for details.
 
+#### End-to-End (E2E) Tests
+```bash
+# Install Playwright browsers (first time only)
+npm run test:e2e:install
+
+# Run E2E tests against local development
+npm run test:e2e
+
+# Run E2E tests with UI (interactive mode)
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode (see browser)
+npm run test:e2e:headed
+
+# Run E2E tests against production
+npm run test:e2e:prod
+```
+
+**E2E Test Configuration:**
+- **Local Testing**: Tests run against `http://localhost:3000` (default)
+- **Production Testing**: Set `PLAYWRIGHT_BASE_URL` environment variable
+- **Browsers**: Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari
+- **Reports**: HTML reports generated in `playwright-report/`
+
 ### Building
 
 ```bash
@@ -190,6 +214,43 @@ REACT_APP_FIREBASE_PROJECT_ID=demo-project
 # Development mode
 REACT_APP_USE_EMULATORS=true
 REACT_APP_ENV=development
+```
+
+## GitHub Actions & CI/CD
+
+### E2E Tests in GitHub Actions
+
+The project includes Playwright E2E tests that run in GitHub Actions:
+
+**Local vs Production Testing:**
+- **Default**: Tests run against local development server
+- **Production**: Set `PLAYWRIGHT_BASE_URL` environment variable
+- **CI/CD**: Automatically runs against local server in GitHub Actions
+
+**GitHub Actions Workflow:**
+```yaml
+# .github/workflows/e2e-tests.yml
+- name: Install Playwright Browsers
+  run: npm run test:e2e:install
+
+- name: Run E2E Tests
+  run: npm run test:e2e
+
+- name: Upload Test Results
+  uses: actions/upload-artifact@v3
+  if: always()
+  with:
+    name: playwright-report
+    path: playwright-report/
+```
+
+**Production Testing Setup:**
+```bash
+# Test against production
+PLAYWRIGHT_BASE_URL=https://your-app.vercel.app npm run test:e2e
+
+# Or use the npm script
+npm run test:e2e:prod
 ```
 
 ## Documentation
