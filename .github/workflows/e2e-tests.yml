@@ -30,7 +30,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: '22.x'
         cache: 'npm'
     
     - name: Install dependencies
@@ -70,25 +70,40 @@ jobs:
         timeout 60 bash -c 'until curl -f http://localhost:4000; do sleep 2; done'
     
     - name: Start React app
-      run: npm run start:frontend &
+      run: |
+        npm run start:frontend > react-app.log 2>&1 &
+        echo $! > react-app.pid
       env:
         CI: true
-        REACT_APP_FIREBASE_USE_EMULATORS: true
         BROWSER: none
+        REACT_APP_FIREBASE_USE_EMULATORS: true
+        REACT_APP_FIREBASE_API_KEY: demo-api-key
+        REACT_APP_FIREBASE_AUTH_DOMAIN: demo-project.firebaseapp.com
+        REACT_APP_FIREBASE_PROJECT_ID: demo-project
+        REACT_APP_FIREBASE_STORAGE_BUCKET: demo-project.appspot.com
+        REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "123456789"
+        REACT_APP_FIREBASE_APP_ID: 1:123456789:web:abcdef123456
+        REACT_APP_FIREBASE_MEASUREMENT_ID: G-XXXXXXXXXX
     
     - name: Wait for React app to be ready
       run: |
-        timeout 120 bash -c 'until curl -f http://localhost:3000 | grep -q "root"; do sleep 2; done'
-        sleep 5
+        timeout 120 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+        sleep 10
+        echo "React app started successfully"
     
     - name: Debug - Check if app is running
       run: |
-        echo "Checking if React app is running..."
-        curl -v http://localhost:3000 || true
-        echo "Checking if emulators are running..."
+        echo "=== React App Logs ==="
+        cat react-app.log || echo "No React app log found"
+        echo ""
+        echo "=== Checking if React app is running ==="
+        curl -v http://localhost:3000 2>&1 | head -50 || true
+        echo ""
+        echo "=== Checking if emulators are running ==="
         curl -v http://localhost:4000 || true
-        echo "Checking running processes..."
-        ps aux | grep -E 'node|react-scripts|firebase' || true
+        echo ""
+        echo "=== Running processes ==="
+        ps aux | grep -E 'node|react-scripts|firebase' | grep -v grep || true
     
     - name: Run E2E tests (Local)
       if: ${{ github.event.inputs.test_production != 'true' }}
