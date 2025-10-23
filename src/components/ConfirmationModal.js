@@ -76,6 +76,7 @@ const ConfirmationModal = ({
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
       onClick={handleBackdropClick}
+      data-testid="confirmation-modal"
     >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 ease-in-out">
         {/* Header */}
@@ -106,6 +107,7 @@ const ConfirmationModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            data-testid="modal-cancel-button"
           >
             {cancelText}
           </button>
@@ -113,6 +115,7 @@ const ConfirmationModal = ({
             onClick={onConfirm}
             disabled={isLoading}
             className={getButtonStyles() + (isLoading ? " opacity-50 cursor-not-allowed" : "")}
+            data-testid="modal-confirm-button"
           >
             {isLoading ? (
               <div className="flex items-center space-x-2">

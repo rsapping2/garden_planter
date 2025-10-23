@@ -95,7 +95,7 @@ describe('AuthContext - Input Validation & Sanitization', () => {
       await act(async () => {
         const response = await result.current.signup(
           'test@example.com',
-          'password123',
+          'Password!2#',
           'A', // Too short
           '12345'
         );
@@ -113,7 +113,7 @@ describe('AuthContext - Input Validation & Sanitization', () => {
       await act(async () => {
         const response = await result.current.signup(
           'test@example.com',
-          'password123',
+          'Password!2#',
           'John Doe',
           '123' // Too short
         );
@@ -130,7 +130,7 @@ describe('AuthContext - Input Validation & Sanitization', () => {
       await act(async () => {
         const response = await result.current.signup(
           'test@example.com',
-          'password123',
+          'Password!2#',
           '123456',
           '12345'
         );
@@ -151,7 +151,7 @@ describe('AuthContext - Input Validation & Sanitization', () => {
       await act(async () => {
         const response = await result.current.signup(
           'test@example.com',
-          'password123',
+          'Password!2#',
           '<script>alert("xss")</script>John Doe',
           '12345'
         );
@@ -192,7 +192,7 @@ describe('AuthContext - Input Validation & Sanitization', () => {
       await act(async () => {
         const response = await result.current.signup(
           'test@example.com',
-          'password123',
+          'Password!2#',
           'John Doe',
           '12345'
         );

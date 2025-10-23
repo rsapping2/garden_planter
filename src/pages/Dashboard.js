@@ -85,23 +85,35 @@ const Dashboard = () => {
     setGardenToDelete(null);
   };
 
+  const [zipToZoneData, setZipToZoneData] = useState(null);
+
+  useEffect(() => {
+    // Load ZIP code to USDA zone mapping on component mount
+    const loadZipToZoneData = async () => {
+      try {
+        const response = await fetch('/data/zip_to_zone.json');
+        const data = await response.json();
+        setZipToZoneData(data);
+      } catch (error) {
+        errorLog('Failed to load ZIP to zone mapping:', error);
+        // If loading fails, we'll fall back to the lookup returning 'Unknown'
+      }
+    };
+    
+    loadZipToZoneData();
+  }, []);
+
   const determineUSDAZone = (zipCode) => {
     if (!zipCode) return 'Unknown';
     
-    const zipNum = parseInt(zipCode);
+    // If data hasn't loaded yet, return Unknown
+    if (!zipToZoneData) return 'Unknown';
     
-    // Simplified USDA zone mapping based on zip codes
-    if (zipNum >= 33000 && zipNum <= 34999) return '9b'; // South Florida
-    if (zipNum >= 90000 && zipNum <= 96199) return '10a'; // Southern California
-    if (zipNum >= 85000 && zipNum <= 86999) return '9a'; // Arizona
-    if (zipNum >= 78000 && zipNum <= 79999) return '8b'; // Texas
-    if (zipNum >= 30000 && zipNum <= 32999) return '8a'; // Georgia
-    if (zipNum >= 27000 && zipNum <= 28999) return '7b'; // North Carolina
-    if (zipNum >= 20000 && zipNum <= 26999) return '7a'; // Mid-Atlantic
-    if (zipNum >= 10000 && zipNum <= 19999) return '6b'; // Northeast
-    if (zipNum >= 1000 && zipNum <= 9999) return '6a'; // New England
+    // Look up the zone from the mapping
+    const zone = zipToZoneData[zipCode];
     
-    return '7a'; // Default zone
+    // Return the zone if found, otherwise return a default
+    return zone || '7a'; // Default to zone 7a if ZIP not found
   };
 
   if (loading) {
@@ -176,6 +188,7 @@ const Dashboard = () => {
               disabled={gardens.length >= 2}
               className={`btn-primary ${gardens.length >= 2 ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={gardens.length >= 2 ? 'Maximum 2 gardens allowed' : 'Create a new garden'}
+              data-testid="create-garden-button"
             >
               {gardens.length >= 2 ? 'Garden Limit Reached' : 'Create New Garden'}
             </button>
@@ -189,6 +202,7 @@ const Dashboard = () => {
               <button
                 onClick={() => setShowCreateGarden(true)}
                 className="btn-primary"
+                data-testid="create-first-garden-button"
               >
                 Create Your First Garden
               </button>
@@ -199,13 +213,14 @@ const Dashboard = () => {
                 <div key={garden.id} className="bg-white rounded-lg shadow p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{garden.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900" data-testid={`garden-name-${garden.id}`}>{garden.name}</h3>
                       <p className="text-sm text-gray-500">Size: {garden.size || '3x6'}</p>
                     </div>
                     <button
                       onClick={() => handleDeleteGarden(garden.id, garden.name)}
                       className="text-red-600 hover:text-red-800 text-sm"
                       title="Delete garden"
+                      data-testid={`delete-garden-${garden.id}`}
                     >
                       🗑️ Delete
                     </button>
@@ -232,6 +247,7 @@ const Dashboard = () => {
                     <Link
                       to={`/garden-planner?garden=${garden.id}`}
                       className="flex-1 btn-primary text-center"
+                      data-testid={`plan-garden-${garden.id}`}
                     >
                       Plan Garden
                     </Link>
@@ -324,9 +340,10 @@ const Dashboard = () => {
                       placeholder="e.g., Vegetable Garden, Herb Garden"
                       maxLength="50"
                       required
+                      data-testid="garden-name-input"
                     />
                     {gardenNameError && (
-                      <p className="mt-1 text-sm text-red-600">{gardenNameError}</p>
+                      <p className="mt-1 text-sm text-red-600" data-testid="garden-name-error">{gardenNameError}</p>
                     )}
                   </div>
                   
@@ -348,6 +365,7 @@ const Dashboard = () => {
                     <button
                       type="submit"
                       className="btn-primary"
+                      data-testid="submit-garden-button"
                     >
                       Create Garden
                     </button>

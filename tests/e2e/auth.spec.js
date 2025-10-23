@@ -120,7 +120,7 @@ test.describe('User Authentication', () => {
     
     if (await confirmPasswordInput.count() > 0) {
       // Enter different passwords
-      await passwordInput.fill('password123');
+      await passwordInput.fill('Password!2#');
       await confirmPasswordInput.fill('different123');
       await submitButton.click();
       
@@ -140,7 +140,7 @@ test.describe('User Authentication', () => {
     
     // Fill in valid test credentials
     await page.locator('input[type="email"]').fill('test@example.com');
-    await page.locator('input[type="password"]').first().fill('password123');
+    await page.locator('input[type="password"]').first().fill('Password!2#');
     
     // Submit form
     await page.locator('button[type="submit"]').click();
@@ -192,9 +192,9 @@ test.describe('User Authentication', () => {
       await nameInput.fill('Test User');
     }
     await emailInput.fill('newuser@example.com');
-    await passwordInput.fill('password123');
+    await passwordInput.fill('Password!2#');
     if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('password123');
+      await confirmPasswordInput.fill('Password!2#');
     }
     if (await zipInput.count() > 0) {
       await zipInput.fill('12345');
@@ -275,7 +275,7 @@ test.describe('User Authentication', () => {
     // Note: This test assumes the app has proper duplicate email prevention
     // If the app doesn't prevent duplicates, this test will fail and indicate a bug
     
-    const testEmail = `test-${Date.now()}@example.com`;
+    const testEmail = `auth-test-${Date.now()}@example.com`;
     
     // Switch to signup mode
     const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
@@ -295,9 +295,9 @@ test.describe('User Authentication', () => {
       await nameInput.fill('Test User');
     }
     await emailInput.fill(testEmail);
-    await passwordInput.fill('password123');
+    await passwordInput.fill('Password!2#');
     if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('password123');
+      await confirmPasswordInput.fill('Password!2#');
     }
     if (await zipInput.count() > 0) {
       await zipInput.fill('12345');
@@ -318,7 +318,14 @@ test.describe('User Authentication', () => {
       return;
     }
     
-    // Navigate back to auth page for second signup attempt
+    // Log out first, then navigate back to auth page for second signup attempt
+    // Look for logout button/link
+    const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out|log out/i });
+    if (await logoutButton.count() > 0) {
+      await logoutButton.click();
+      await page.waitForTimeout(1000); // Wait for logout to complete
+    }
+    
     await page.goto('/auth');
     await page.waitForLoadState('networkidle');
     

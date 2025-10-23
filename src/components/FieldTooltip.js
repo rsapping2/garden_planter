@@ -85,11 +85,11 @@ const FieldTooltip = ({ fieldType, children }) => {
   const tooltipContent = getTooltipContent(fieldType);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-flex items-center">
       {children}
       <button
         type="button"
-        className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none"
+        className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none inline-flex items-center"
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
         onClick={() => setIsVisible(!isVisible)}
