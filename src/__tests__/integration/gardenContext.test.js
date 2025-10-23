@@ -226,7 +226,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
           await result.current.addTask({
             title: 'A', // Too short
             type: 'watering',
-            dueDate: '2024-12-01',
+            dueDate: '2025-12-01',
             gardenId: 'test-garden',
             gardenName: 'Test Garden',
             notes: ''
@@ -250,7 +250,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
           await result.current.addTask({
             title: 'A'.repeat(101), // Too long
             type: 'watering',
-            dueDate: '2024-12-01',
+            dueDate: '2025-12-01',
             gardenId: 'test-garden',
             gardenName: 'Test Garden',
             notes: ''
@@ -274,7 +274,7 @@ describe('GardenContext - Input Validation & Sanitization', () => {
           await result.current.addTask({
             title: 'Water plants',
             type: 'watering',
-            dueDate: '2024-12-01',
+            dueDate: '2025-12-01',
             gardenId: 'test-garden',
             gardenName: 'Test Garden',
             notes: 'A'.repeat(501) // Too long

@@ -12,10 +12,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 24,
     companionIds: ['basil', 'marigold'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-10-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-10-15',
     image: '🍅'
   },
   {
@@ -28,10 +28,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 6,
     companionIds: ['carrot', 'radish'],
-    plantingStart: '2024-02-15',
-    plantingEnd: '2024-04-30',
-    harvestStart: '2024-04-15',
-    harvestEnd: '2024-06-30',
+    plantingStart: '2025-02-15',
+    plantingEnd: '2025-04-30',
+    harvestStart: '2025-04-15',
+    harvestEnd: '2025-06-30',
     image: '🥬'
   },
   {
@@ -44,10 +44,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 3,
     companionIds: ['lettuce', 'onion'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-08-15',
     image: '🥕'
   },
   {
@@ -60,10 +60,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 12,
     companionIds: ['tomato'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-09-30',
     image: '🌿'
   },
   {
@@ -76,10 +76,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 8,
     companionIds: ['tomato', 'pepper'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-10-31',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-10-31',
     image: '🌼'
   },
   {
@@ -92,10 +92,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 18,
     companionIds: ['marigold', 'basil'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-07-15',
-    harvestEnd: '2024-10-15',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-07-15',
+    harvestEnd: '2025-10-15',
     image: '🫑'
   },
   {
@@ -108,10 +108,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 4,
     companionIds: ['carrot', 'lettuce'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-04-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-04-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-08-15',
     image: '🧅'
   },
   {
@@ -124,10 +124,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 2,
     companionIds: ['lettuce', 'carrot'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-04-15',
-    harvestEnd: '2024-06-01',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-04-15',
+    harvestEnd: '2025-06-01',
     image: '🔴'
   },
   {
@@ -140,10 +140,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 36,
     companionIds: ['beans', 'corn', 'sunflower'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-09-30',
     image: '🥒'
   },
   {
@@ -156,10 +156,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 6,
     companionIds: ['corn', 'cucumber', 'potato'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-07-01',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-09-15',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-07-01',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-09-15',
     image: '🫘'
   },
   {
@@ -172,10 +172,10 @@ export const PLANT_DATABASE = [
     zoneMax: 8,
     spacing: 12,
     companionIds: ['beans', 'cucumber', 'squash'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-07-15',
-    harvestEnd: '2024-09-15',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-07-15',
+    harvestEnd: '2025-09-15',
     image: '🌽'
   },
   {
@@ -188,10 +188,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 12,
     companionIds: ['beans', 'cabbage', 'marigold'],
-    plantingStart: '2024-03-15',
-    plantingEnd: '2024-05-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-03-15',
+    plantingEnd: '2025-05-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-09-30',
     image: '🥔'
   },
   {
@@ -204,10 +204,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 18,
     companionIds: ['potato', 'onion', 'marigold'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-08-15',
     image: '🥬'
   },
   {
@@ -220,10 +220,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 4,
     companionIds: ['strawberry', 'radish', 'lettuce'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-04-15',
-    harvestEnd: '2024-06-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-04-15',
+    harvestEnd: '2025-06-15',
     image: '🥬'
   },
   {
@@ -236,10 +236,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 18,
     companionIds: ['spinach', 'lettuce', 'thyme'],
-    plantingStart: '2024-03-15',
-    plantingEnd: '2024-05-15',
-    harvestStart: '2024-05-15',
-    harvestEnd: '2024-07-15',
+    plantingStart: '2025-03-15',
+    plantingEnd: '2025-05-15',
+    harvestStart: '2025-05-15',
+    harvestEnd: '2025-07-15',
     image: '🍓'
   },
   {
@@ -252,10 +252,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 12,
     companionIds: ['strawberry', 'tomato', 'cabbage'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-09-30',
     image: '🌿'
   },
   {
@@ -268,10 +268,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 12,
     companionIds: ['tomato', 'pepper', 'basil'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-09-30',
     image: '🌿'
   },
   {
@@ -284,10 +284,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 18,
     companionIds: ['cabbage', 'tomato'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-09-30',
     image: '🍃'
   },
   {
@@ -300,10 +300,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 24,
     companionIds: ['cucumber', 'corn', 'beans'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-08-01',
-    harvestEnd: '2024-10-15',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-08-01',
+    harvestEnd: '2025-10-15',
     image: '🌻'
   },
   {
@@ -316,10 +316,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 36,
     companionIds: ['corn', 'beans', 'marigold'],
-    plantingStart: '2024-05-01',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-05-01',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-09-30',
     image: '🥒'
   },
   {
@@ -332,10 +332,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 18,
     companionIds: ['onion', 'marigold', 'thyme'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-08-15',
     image: '🥦'
   },
   {
@@ -348,10 +348,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 3,
     companionIds: ['carrot', 'radish', 'corn'],
-    plantingStart: '2024-02-15',
-    plantingEnd: '2024-04-15',
-    harvestStart: '2024-05-15',
-    harvestEnd: '2024-07-15',
+    plantingStart: '2025-02-15',
+    plantingEnd: '2025-04-15',
+    harvestStart: '2025-05-15',
+    harvestEnd: '2025-07-15',
     image: '🫛'
   },
   {
@@ -364,10 +364,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 36,
     companionIds: ['corn', 'beans', 'marigold'],
-    plantingStart: '2024-05-01',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-07-01',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-05-01',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-07-01',
+    harvestEnd: '2025-09-30',
     image: '🥒'
   },
   {
@@ -380,10 +380,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 24,
     companionIds: ['basil', 'marigold', 'pepper'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-07-15',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-07-15',
+    harvestEnd: '2025-09-30',
     image: '🍆'
   },
   {
@@ -396,10 +396,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 18,
     companionIds: ['onion', 'marigold', 'thyme'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-08-15',
     image: '🥦'
   },
   {
@@ -412,10 +412,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 12,
     companionIds: ['onion', 'marigold', 'herbs'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-05-15',
-    harvestEnd: '2024-11-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-05-15',
+    harvestEnd: '2025-11-15',
     image: '🥬'
   },
   {
@@ -428,10 +428,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 24,
     companionIds: ['sage', 'thyme', 'cabbage'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-12-31',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-12-31',
     image: '🌿'
   },
   {
@@ -444,10 +444,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 18,
     companionIds: ['rosemary', 'thyme', 'cabbage'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-10-31',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-10-31',
     image: '🌿'
   },
   {
@@ -460,10 +460,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 8,
     companionIds: ['carrot', 'tomato', 'cabbage'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-05-01',
-    harvestEnd: '2024-10-31',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-05-01',
+    harvestEnd: '2025-10-31',
     image: '🧄'
   },
   {
@@ -476,10 +476,10 @@ export const PLANT_DATABASE = [
     zoneMax: 9,
     spacing: 24,
     companionIds: ['rosemary', 'sage', 'thyme'],
-    plantingStart: '2024-04-01',
-    plantingEnd: '2024-06-01',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-04-01',
+    plantingEnd: '2025-06-01',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-08-15',
     image: '💜'
   },
   {
@@ -492,10 +492,10 @@ export const PLANT_DATABASE = [
     zoneMax: 11,
     spacing: 12,
     companionIds: ['cucumber', 'tomato', 'radish'],
-    plantingStart: '2024-04-15',
-    plantingEnd: '2024-06-15',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-09-30',
+    plantingStart: '2025-04-15',
+    plantingEnd: '2025-06-15',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-09-30',
     image: '🌺'
   },
   {
@@ -508,10 +508,10 @@ export const PLANT_DATABASE = [
     zoneMax: 10,
     spacing: 4,
     companionIds: ['onion', 'cabbage', 'lettuce'],
-    plantingStart: '2024-03-01',
-    plantingEnd: '2024-05-01',
-    harvestStart: '2024-06-01',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-01',
+    plantingEnd: '2025-05-01',
+    harvestStart: '2025-06-01',
+    harvestEnd: '2025-08-15',
     image: '🟤'
   },
   {
@@ -524,10 +524,10 @@ export const PLANT_DATABASE = [
     zoneMax: 8,
     spacing: 48,
     companionIds: ['strawberry'],
-    plantingStart: '2024-03-15',
-    plantingEnd: '2024-05-15',
-    harvestStart: '2024-06-15',
-    harvestEnd: '2024-08-15',
+    plantingStart: '2025-03-15',
+    plantingEnd: '2025-05-15',
+    harvestStart: '2025-06-15',
+    harvestEnd: '2025-08-15',
     image: '🫐'
   }
 ];

@@ -26,7 +26,7 @@ const Header = ({ showWelcome = true }) => {
               Plant Library
             </Link>
             <Link to="/schedule" className="text-gray-600 hover:text-primary-600">
-              Schedule
+              Task Schedule
             </Link>
             <Link to="/notifications" className="text-gray-600 hover:text-primary-600">
               Notifications

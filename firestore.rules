@@ -96,12 +96,7 @@ service cloud.firestore {
         isValidString(request.resource.data.gardenName, 1, 100);
       
       allow update: if request.auth != null && 
-        request.auth.uid == resource.data.userId &&
-        // Ensure userId cannot be changed
-        request.resource.data.userId == resource.data.userId &&
-        (!('title' in request.resource.data) || isValidString(request.resource.data.title, 2, 100)) &&
-        (!('notes' in request.resource.data) || isValidString(request.resource.data.notes, 0, 500)) &&
-        (!('completed' in request.resource.data) || isValidBoolean(request.resource.data.completed));
+        request.auth.uid == resource.data.userId;
       
       allow delete: if request.auth != null && 
         request.auth.uid == resource.data.userId;

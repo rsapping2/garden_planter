@@ -81,29 +81,61 @@ export const GardenProvider = ({ children }) => {
       // If no gardens found in Firestore, create a starter garden
       if (userGardens.length === 0) {
         debugLog('No gardens found, creating starter garden');
-        const starterGarden = {
-          userId: user.id,
-          name: 'My First Garden',
-          size: '3x6',
-          description: 'A starter garden for vegetables',
-          layout: {
-            width: 6, // 6 columns (A-F)
-            height: 3, // 3 rows (1-3)
-            plants: [
-              { id: '1', plantId: 'tomato', x: 0, y: 0, datePlanted: '2024-03-15' },
-              { id: '2', plantId: 'lettuce', x: 1, y: 0, datePlanted: '2024-03-10' },
-              { id: '3', plantId: 'carrot', x: 2, y: 0, datePlanted: '2024-03-20' }
-            ]
-          }
-        };
         
+        // Double-check that no gardens exist to prevent race conditions
         try {
-          const gardenRef = await addDoc(collection(db, 'gardens'), starterGarden);
-          userGardens = [{ id: gardenRef.id, ...starterGarden }];
-          debugLog('Created starter garden in Firestore:', gardenRef.id);
+          const doubleCheckQuery = query(
+            collection(db, 'gardens'),
+            where('userId', '==', user.id)
+          );
+          const doubleCheckSnapshot = await getDocs(doubleCheckQuery);
+          
+          if (doubleCheckSnapshot.docs.length === 0) {
+            const starterGarden = {
+              userId: user.id,
+              name: 'My First Garden',
+              size: '3x6',
+              description: 'A starter garden for vegetables',
+              layout: {
+                width: 6, // 6 columns (A-F)
+                height: 3, // 3 rows (1-3)
+                plants: [
+                  { id: '1', plantId: 'tomato', x: 0, y: 0, datePlanted: '2025-03-15' },
+                  { id: '2', plantId: 'lettuce', x: 1, y: 0, datePlanted: '2025-03-10' },
+                  { id: '3', plantId: 'carrot', x: 2, y: 0, datePlanted: '2025-03-20' }
+                ]
+              }
+            };
+            
+            const gardenRef = await addDoc(collection(db, 'gardens'), starterGarden);
+            userGardens = [{ id: gardenRef.id, ...starterGarden }];
+            debugLog('Created starter garden in Firestore:', gardenRef.id);
+          } else {
+            // Another process created a garden, use that one
+            userGardens = doubleCheckSnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            debugLog('Found existing gardens on double-check:', userGardens.length);
+          }
         } catch (error) {
           errorLog('Error creating starter garden:', error);
           // Fallback to local state only
+          const starterGarden = {
+            userId: user.id,
+            name: 'My First Garden',
+            size: '3x6',
+            description: 'A starter garden for vegetables',
+            layout: {
+              width: 6, // 6 columns (A-F)
+              height: 3, // 3 rows (1-3)
+              plants: [
+                { id: '1', plantId: 'tomato', x: 0, y: 0, datePlanted: '2025-03-15' },
+                { id: '2', plantId: 'lettuce', x: 1, y: 0, datePlanted: '2025-03-10' },
+                { id: '3', plantId: 'carrot', x: 2, y: 0, datePlanted: '2025-03-20' }
+              ]
+            }
+          };
           userGardens = [{ id: '1', ...starterGarden }];
         }
       }
@@ -243,16 +275,39 @@ export const GardenProvider = ({ children }) => {
 
   const deleteGarden = async (gardenId) => {
     try {
+      debugLog('Attempting to delete garden:', gardenId);
+      
+      // Validate gardenId
+      if (!gardenId) {
+        throw new Error('Garden ID is required for deletion');
+      }
+      
+      // Check if garden exists in local state
+      const gardenToDelete = gardens.find(garden => garden.id === gardenId);
+      if (!gardenToDelete) {
+        throw new Error(`Garden with ID ${gardenId} not found`);
+      }
+      
+      debugLog('Garden found for deletion:', gardenToDelete.name);
+      
       // Delete from Firestore
       await deleteDoc(doc(db, 'gardens', gardenId));
+      debugLog('Garden deleted from Firestore:', gardenId);
       
       // Delete associated tasks
       const gardenTasks = tasks.filter(task => task.gardenId === gardenId);
-      const batch = writeBatch(db);
-      gardenTasks.forEach(task => {
-        batch.delete(doc(db, 'tasks', task.id));
-      });
-      await batch.commit();
+      debugLog(`Found ${gardenTasks.length} tasks to delete for garden ${gardenId}`);
+      
+      if (gardenTasks.length > 0) {
+        const batch = writeBatch(db);
+        gardenTasks.forEach(task => {
+          if (task.id) {
+            batch.delete(doc(db, 'tasks', task.id));
+          }
+        });
+        await batch.commit();
+        debugLog('Associated tasks deleted from Firestore');
+      }
       
       // Update local state
       const updatedGardens = gardens.filter(garden => garden.id !== gardenId);
@@ -260,9 +315,11 @@ export const GardenProvider = ({ children }) => {
       setGardens(updatedGardens);
       setTasks(updatedTasks);
       
-      debugLog('Garden and associated tasks deleted from Firestore:', gardenId);
+      debugLog('Garden and associated tasks deleted successfully:', gardenId);
     } catch (error) {
       errorLog('Error deleting garden from Firestore:', error);
+      errorLog('Garden ID:', gardenId);
+      errorLog('Available gardens:', gardens.map(g => ({ id: g.id, name: g.name })));
       throw error;
     }
   };

@@ -56,7 +56,7 @@ describe('Auth Routes', () => {
     test('should return 400 for duplicate email', async () => {
       const userData = {
         email: 'duplicate@example.com',
-        password: 'password123',
+        password: 'Password!2#',
         name: 'Test User',
         zipCode: '90210'
       };
@@ -82,7 +82,7 @@ describe('Auth Routes', () => {
       // Create a test user for login tests
       const userData = {
         email: 'logintest@example.com',
-        password: 'password123',
+        password: 'Password!2#',
         name: 'Login Test User',
         zipCode: '90210'
       };
@@ -95,7 +95,7 @@ describe('Auth Routes', () => {
     test('should login with valid credentials', async () => {
       const loginData = {
         email: 'logintest@example.com',
-        password: 'password123'
+        password: 'Password!2#'
       };
 
       const response = await request(app)
@@ -138,7 +138,7 @@ describe('Auth Routes', () => {
       // Create a test user first
       const userData = {
         email: 'profiletest@example.com',
-        password: 'password123',
+        password: 'Password!2#',
         name: 'Profile Test User',
         zipCode: '90210'
       };
@@ -196,7 +196,7 @@ describe('Auth Routes', () => {
       
       const userData = {
         email: 'performance@example.com',
-        password: 'password123',
+        password: 'Password!2#',
         name: 'Performance Test',
         zipCode: '90210'
       };
