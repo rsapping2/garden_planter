@@ -89,9 +89,9 @@ test.describe('Garden Management', () => {
       await page.waitForTimeout(500);
     }
 
-    // Wait for redirect to dashboard
-    await page.waitForURL(url => url.pathname.includes('/dashboard'), { timeout: 5000 });
-    await page.waitForSelector('h1', { timeout: 5000 });
+    // Wait for redirect to dashboard (longer timeout for CI)
+    await page.waitForURL(url => url.pathname.includes('/dashboard'), { timeout: 15000 });
+    await page.waitForSelector('h1', { timeout: 10000 });
 
     console.log(`✅ Test user logged in successfully`);
   });
