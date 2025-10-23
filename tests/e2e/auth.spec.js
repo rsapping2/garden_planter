@@ -7,8 +7,14 @@ test.describe('User Authentication', () => {
     // Create a shared page context for all tests in this describe block
     const context = await browser.newContext();
     page = await context.newPage();
+  });
+  
+  test.beforeEach(async () => {
+    // Reload the auth page before each test to ensure clean state
     await page.goto('/auth');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the auth form to be visible
+    await page.waitForSelector('form', { timeout: 10000 });
   });
   
   test.afterAll(async () => {
