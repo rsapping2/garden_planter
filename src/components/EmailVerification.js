@@ -107,6 +107,7 @@ const EmailVerification = ({ email, onVerified, onResend }) => {
             placeholder="123456"
             maxLength="6"
             required
+            data-testid="verification-code-input"
           />
         </div>
 
@@ -118,6 +119,7 @@ const EmailVerification = ({ email, onVerified, onResend }) => {
           type="submit"
           disabled={isLoading || verificationCode.length !== 6}
           className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          data-testid="verify-email-button"
         >
           {isLoading ? 'Verifying...' : 'Verify Email'}
         </button>
@@ -135,9 +137,9 @@ const EmailVerification = ({ email, onVerified, onResend }) => {
       </div>
 
       {emailService.shouldShowDemoCodes() && demoCode && (
-        <div className="mt-4 p-3 bg-blue-50 rounded-md">
+        <div className="mt-4 p-3 bg-blue-50 rounded-md" data-testid="demo-code-display">
           <p className="text-xs text-blue-800">
-            <strong>Demo:</strong> Use code <code className="bg-blue-100 px-1 rounded">{demoCode}</code> to verify
+            <strong>Demo:</strong> Use code <code className="bg-blue-100 px-1 rounded" data-testid="demo-code-text">{demoCode}</code> to verify
           </p>
         </div>
       )}

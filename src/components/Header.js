@@ -38,6 +38,7 @@ const Header = ({ showWelcome = true }) => {
             <button
               onClick={logout}
               className="text-gray-600 hover:text-primary-600"
+              data-testid="sign-out-button"
             >
               Sign Out
             </button>

@@ -151,7 +151,7 @@ const GardenPlanner = () => {
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Garden Planner</h1>
+              <h1 className="text-3xl font-bold text-gray-900" data-testid="garden-planner-header">Garden Planner</h1>
               <p className="text-gray-600 mt-2">
                 Design your garden layout by dragging plants from the library
               </p>
@@ -179,11 +179,11 @@ const GardenPlanner = () => {
           {/* Plant Library Sidebar */}
           <div className="lg:col-span-1">
             <div className="card sticky top-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Plant Library</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4" data-testid="plant-library-header">Plant Library</h2>
               
               {/* Debug info */}
-              <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-                <p>Plants loaded: {plants.length}</p>
+              <div className="mb-4 p-2 bg-gray-100 rounded text-xs" data-testid="plants-loaded-info">
+                <p data-testid="plants-loaded-count">Plants loaded: {plants.length}</p>
                 <p>Filtered plants: {filteredPlants.length}</p>
                 <p>Search: &quot;{searchTerm}&quot;</p>
                 <p>Type filter: {filterType}</p>
@@ -250,14 +250,14 @@ const GardenPlanner = () => {
           <div className="lg:col-span-3">
             <div className="card">
               <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedGarden.name}</h2>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900" data-testid={`garden-name-${selectedGarden.id}`}>{selectedGarden.name}</h2>
                   <p className="text-gray-600">
                     {selectedGarden.layout.width} × {selectedGarden.layout.height} grid
                   </p>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600" data-testid="garden-plant-count">
                     {(gardens.find(g => g.id === selectedGarden.id) || selectedGarden).layout.plants.length} plants
                   </span>
                   <button className="btn-secondary text-sm">

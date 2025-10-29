@@ -18,10 +18,11 @@ const PlantCard = ({ plant, onPlantClick, userZone }) => {
         isDragging ? 'opacity-50' : ''
       }`}
       onClick={() => onPlantClick(plant)}
+      data-testid={`plant-card-${plant.id}`}
     >
       <div className="text-center flex-1 flex flex-col">
         <div className="text-4xl mb-3">{plant.image}</div>
-        <h3 className="font-semibold text-gray-900 mb-2">{plant.name}</h3>
+        <h3 className="font-semibold text-gray-900 mb-2" data-testid={`plant-name-${plant.id}`}>{plant.name}</h3>
         <div className="space-y-1 text-sm text-gray-600 flex-1">
           <p><span className="font-medium">Type:</span> {plant.type}</p>
           <p><span className="font-medium">Sun:</span> {plant.sun}</p>

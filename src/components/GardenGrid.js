@@ -69,6 +69,7 @@ const GardenGrid = ({ garden, onPlantDrop, onPlantMove, onPlantClick, onEmptySlo
         onClick={() => handleSlotClick(x, y)}
         data-x={x}
         data-y={y}
+        data-testid={`plant-slot-${x}-${y}`}
         title={
           existingPlant 
             ? `${plantData?.name || 'Unknown Plant'} - Planted: ${existingPlant.datePlanted}` 

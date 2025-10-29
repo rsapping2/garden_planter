@@ -29,7 +29,7 @@ test.describe('User Authentication', () => {
     // Check if we ended up on dashboard (means we're signed in)
     if (page.url().includes('/dashboard')) {
       // Sign out if sign out button is visible
-      const logoutButton = page.locator('button:has-text("Sign Out")');
+      const logoutButton = page.locator('[data-testid="sign-out-button"]');
       if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await logoutButton.click();
         await page.waitForURL(url => url.pathname.includes('/auth'), { timeout: 5000 });
@@ -111,10 +111,10 @@ test.describe('User Authentication', () => {
     // Check that login form is visible
     await expect(page.locator('form')).toBeVisible();
     
-    // Check for login-specific elements
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]');
-    const loginButton = page.locator('button[type="submit"]');
+    // Check for login-specific elements using test IDs
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const loginButton = page.locator('[data-testid="submit-button"]');
     
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
@@ -125,30 +125,28 @@ test.describe('User Authentication', () => {
   });
 
   test('should switch to signup form when toggled', async () => {
-    // Look for signup toggle button/link
-    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register|create account/i });
+    // Look for signup toggle button using test ID
+    const signupToggle = page.locator('[data-testid="switch-to-signup-button"]');
     
-    if (await signupToggle.count() > 0) {
+    if (await signupToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await signupToggle.click();
       await page.waitForTimeout(500); // Wait for form switch
       
-      // Check for signup-specific elements
-      const nameInput = page.locator('input[name*="name"], input[placeholder*="name"]');
-      const confirmPasswordInput = page.locator('input[placeholder*="confirm"], input[name*="confirm"]');
-      const signupButton = page.locator('button[type="submit"]');
+      // Check for signup-specific elements using test IDs
+      const nameInput = page.locator('[data-testid="name-input"]');
+      const confirmPasswordInput = page.locator('[data-testid="confirm-password-input"]');
+      const signupButton = page.locator('[data-testid="submit-button"]');
       
-      // At least one of these should be visible for signup
-      const hasNameInput = await nameInput.count() > 0;
-      const hasConfirmPassword = await confirmPasswordInput.count() > 0;
-      
-      expect(hasNameInput || hasConfirmPassword).toBeTruthy();
+      // Both should be visible for signup
+      await expect(nameInput).toBeVisible();
+      await expect(confirmPasswordInput).toBeVisible();
       await expect(signupButton).toContainText(/sign up|register|create/i);
     }
   });
 
   test('should validate required fields', async () => {
-    // Try to submit empty form
-    const submitButton = page.locator('button[type="submit"]');
+    // Try to submit empty form using test ID
+    const submitButton = page.locator('[data-testid="submit-button"]');
     await submitButton.click();
     
     // Wait a moment for validation to appear
@@ -163,8 +161,8 @@ test.describe('User Authentication', () => {
   });
 
   test('should validate email format', async () => {
-    const emailInput = page.locator('input[type="email"]');
-    const submitButton = page.locator('button[type="submit"]');
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const submitButton = page.locator('[data-testid="submit-button"]');
     
     // Enter invalid email
     await emailInput.fill('invalid-email');
@@ -176,15 +174,15 @@ test.describe('User Authentication', () => {
   });
 
   test('should validate password requirements', async () => {
-    // Switch to signup if needed
-    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
-    if (await signupToggle.count() > 0) {
+    // Switch to signup if needed using test ID
+    const signupToggle = page.locator('[data-testid="switch-to-signup-button"]');
+    if (await signupToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await signupToggle.click();
       await page.waitForTimeout(500);
     }
     
-    const passwordInput = page.locator('input[type="password"]').first();
-    const submitButton = page.locator('button[type="submit"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const submitButton = page.locator('[data-testid="submit-button"]');
     
     // Enter weak password
     await passwordInput.fill('123');
@@ -196,18 +194,18 @@ test.describe('User Authentication', () => {
   });
 
   test('should validate password confirmation', async () => {
-    // Switch to signup if needed
-    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
-    if (await signupToggle.count() > 0) {
+    // Switch to signup if needed using test ID
+    const signupToggle = page.locator('[data-testid="switch-to-signup-button"]');
+    if (await signupToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await signupToggle.click();
       await page.waitForTimeout(500);
     }
     
-    const passwordInput = page.locator('input[type="password"]').first();
-    const confirmPasswordInput = page.locator('input[type="password"]').nth(1);
-    const submitButton = page.locator('button[type="submit"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const confirmPasswordInput = page.locator('[data-testid="confirm-password-input"]');
+    const submitButton = page.locator('[data-testid="submit-button"]');
     
-    if (await confirmPasswordInput.count() > 0) {
+    if (await confirmPasswordInput.isVisible({ timeout: 2000 }).catch(() => false)) {
       // Enter different passwords
       await passwordInput.fill('Password!2#');
       await confirmPasswordInput.fill('different123');
@@ -220,19 +218,19 @@ test.describe('User Authentication', () => {
   });
 
   test('should handle successful login with valid credentials', async () => {
-    // Make sure we're in login mode (not signup)
-    const loginToggle = page.locator('button, a').filter({ hasText: /login|sign in/i });
-    if (await loginToggle.count() > 0) {
+    // Make sure we're in login mode (not signup) using test ID
+    const loginToggle = page.locator('[data-testid="switch-to-login-button"]');
+    if (await loginToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await loginToggle.click();
       await page.waitForTimeout(500);
     }
     
-    // Fill in valid test credentials
-    await page.locator('input[type="email"]').fill('test@example.com');
-    await page.locator('input[type="password"]').first().fill('Password!2#');
+    // Fill in valid test credentials using test IDs
+    await page.locator('[data-testid="email-input"]').fill('test@example.com');
+    await page.locator('[data-testid="password-input"]').fill('Password!2#');
     
-    // Submit form
-    await page.locator('button[type="submit"]').click();
+    // Submit form using test ID
+    await page.locator('[data-testid="submit-button"]').click();
     
     // Wait for navigation or success message
     await page.waitForTimeout(2000);
@@ -263,34 +261,22 @@ test.describe('User Authentication', () => {
   });
 
   test('should handle successful signup with valid data', async () => {
-    // Switch to signup
-    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
-    if (await signupToggle.count() > 0) {
+    // Switch to signup using test ID
+    const signupToggle = page.locator('[data-testid="switch-to-signup-button"]');
+    if (await signupToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await signupToggle.click();
       await page.waitForTimeout(500);
     }
     
-    // Fill in signup form
-    const nameInput = page.locator('input[name*="name"], input[placeholder*="name"]');
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]').first();
-    const confirmPasswordInput = page.locator('input[type="password"]').nth(1);
-    const zipInput = page.locator('input[name*="zip"], input[placeholder*="zip"]');
+    // Fill in signup form using test IDs
+    await page.locator('[data-testid="name-input"]').fill('Test User');
+    await page.locator('[data-testid="email-input"]').fill('newuser@example.com');
+    await page.locator('[data-testid="password-input"]').fill('Password!2#');
+    await page.locator('[data-testid="confirm-password-input"]').fill('Password!2#');
+    await page.locator('[data-testid="zipcode-input"]').fill('12345');
     
-    if (await nameInput.count() > 0) {
-      await nameInput.fill('Test User');
-    }
-    await emailInput.fill('newuser@example.com');
-    await passwordInput.fill('Password!2#');
-    if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('Password!2#');
-    }
-    if (await zipInput.count() > 0) {
-      await zipInput.fill('12345');
-    }
-    
-    // Submit form
-    await page.locator('button[type="submit"]').click();
+    // Submit form using test ID
+    await page.locator('[data-testid="submit-button"]').click();
     
     // Wait for processing
     await page.waitForTimeout(3000);
@@ -314,9 +300,9 @@ test.describe('User Authentication', () => {
   });
 
   test('should have accessible form elements', async () => {
-    // Check for proper labels
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]');
+    // Check for proper labels using test IDs
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
     
     // Check that inputs have labels or aria-labels
     const emailLabel = page.locator('label[for], [aria-label]').filter({ hasText: /email/i });
@@ -378,9 +364,9 @@ test.describe('User Authentication', () => {
     }
     
     // Log out first, then navigate back to auth page for second signup attempt
-    // Look for logout button/link
-    const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out|log out/i });
-    if (await logoutButton.count() > 0) {
+    // Look for logout button using test ID
+    const logoutButton = page.locator('[data-testid="sign-out-button"]');
+    if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
       await logoutButton.click();
       await page.waitForTimeout(1000); // Wait for logout to complete
     }
@@ -388,24 +374,18 @@ test.describe('User Authentication', () => {
     await page.goto('/auth');
     await page.waitForLoadState('networkidle');
     
-    // Switch to signup mode again
-    if (await signupToggle.count() > 0) {
+    // Switch to signup mode again using test ID
+    if (await signupToggle.isVisible({ timeout: 2000 }).catch(() => false)) {
       await signupToggle.click();
       await page.waitForTimeout(500);
     }
     
-    // Fill in signup form with the SAME email
-    if (await nameInput.count() > 0) {
-      await nameInput.fill('Another User');
-    }
+    // Fill in signup form with the SAME email using test IDs
+    await nameInput.fill('Another User');
     await emailInput.fill(testEmail); // Same email as before
     await passwordInput.fill('differentpassword');
-    if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('differentpassword');
-    }
-    if (await zipInput.count() > 0) {
-      await zipInput.fill('54321');
-    }
+    await confirmPasswordInput.fill('differentpassword');
+    await zipInput.fill('54321');
     
     // Submit second signup attempt using test ID
     await page.locator('[data-testid="submit-button"]').click();
@@ -447,10 +427,10 @@ test.describe('Authentication - Mobile Responsiveness', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     
-    // Check that form is still usable on mobile
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]');
-    const submitButton = page.locator('button[type="submit"]');
+    // Check that form is still usable on mobile using test IDs
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const submitButton = page.locator('[data-testid="submit-button"]');
     
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
@@ -466,10 +446,10 @@ test.describe('Authentication - Mobile Responsiveness', () => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
     
-    // Check that form is still usable on tablet
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]');
-    const submitButton = page.locator('button[type="submit"]');
+    // Check that form is still usable on tablet using test IDs
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const submitButton = page.locator('[data-testid="submit-button"]');
     
     await expect(emailInput).toBeVisible();
     await expect(passwordInput).toBeVisible();
