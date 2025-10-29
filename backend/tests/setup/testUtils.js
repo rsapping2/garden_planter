@@ -8,7 +8,7 @@
 const testUsers = {
   valid: {
     email: 'test@example.com',
-    password: 'password123',
+    password: 'Password!2#',
     name: 'Test User',
     zipCode: '90210'
   },
@@ -20,7 +20,7 @@ const testUsers = {
   },
   duplicate: {
     email: 'duplicate@example.com',
-    password: 'password123',
+    password: 'Password!2#',
     name: 'Duplicate User',
     zipCode: '10001'
   }

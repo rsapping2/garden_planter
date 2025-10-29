@@ -1,7 +1,7 @@
 const { chromium } = require('@playwright/test');
 const { ensureTestUserExists } = require('./shared/test-user');
 
-async function globalSetup(config) {
+async function globalSetup(_config) {
   console.log('🚀 Setting up global test user...');
   
   // Create a browser instance for setup

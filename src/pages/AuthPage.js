@@ -17,7 +17,6 @@ const AuthPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [usdaZone, setUsdaZone] = useState('');
   const [showEmailVerification, setShowEmailVerification] = useState(false);
   const [pendingUser, setPendingUser] = useState(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -33,21 +32,6 @@ const AuthPage = () => {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (formData.zipCode && formData.zipCode.length === 5) {
-      // Simulate USDA zone lookup
-      const zoneMap = {
-        '90210': '10a',
-        '10001': '7b',
-        '60601': '6a',
-        '33101': '11a',
-        '98101': '8b'
-      };
-      setUsdaZone(zoneMap[formData.zipCode] || '7a');
-    } else {
-      setUsdaZone('');
-    }
-  }, [formData.zipCode]);
 
   const validateForm = () => {
     const validation = validateFormData(formData, !isLogin);
@@ -176,6 +160,7 @@ const AuthPage = () => {
           <p className="mt-2 text-sm text-gray-600">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
+              data-testid={isLogin ? "switch-to-signup-button" : "switch-to-login-button"}
               onClick={() => {
                 setIsLogin(!isLogin);
                 // Reset form data when switching modes
@@ -187,7 +172,6 @@ const AuthPage = () => {
                   zipCode: ''
                 });
                 setErrors({});
-                setUsdaZone('');
                 setHasSubmitted(false);
               }}
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -216,6 +200,7 @@ const AuthPage = () => {
                   id="name"
                   name="name"
                   type="text"
+                  data-testid="name-input"
                   value={formData.name}
                   onChange={handleInputChange}
                   className={`input-field mt-1 ${errors.name ? 'border-red-300' : ''}`}
@@ -237,6 +222,7 @@ const AuthPage = () => {
                 id="email"
                 name="email"
                 type="email"
+                data-testid="email-input"
                 value={formData.email}
                 onChange={handleInputChange}
                 className={`input-field mt-1 ${errors.email ? 'border-red-300' : ''}`}
@@ -257,6 +243,7 @@ const AuthPage = () => {
                 id="password"
                 name="password"
                 type="password"
+                data-testid="password-input"
                 value={formData.password}
                 onChange={handleInputChange}
                 className={`input-field mt-1 ${errors.password ? 'border-red-300' : ''}`}
@@ -276,6 +263,7 @@ const AuthPage = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
+                  data-testid="confirm-password-input"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className={`input-field mt-1 ${errors.confirmPassword ? 'border-red-300' : ''}`}
@@ -301,6 +289,7 @@ const AuthPage = () => {
                   id="zipCode"
                   name="zipCode"
                   type="text"
+                  data-testid="zipcode-input"
                   value={formData.zipCode}
                   onChange={handleInputChange}
                   className={`input-field mt-1 ${errors.zipCode ? 'border-red-300' : ''}`}
@@ -312,17 +301,13 @@ const AuthPage = () => {
                 {errors.zipCode && (
                   <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>
                 )}
-                {usdaZone && (
-                  <p className="mt-1 text-sm text-green-600">
-                    🌡️ USDA Hardiness Zone: {usdaZone}
-                  </p>
-                )}
               </div>
             )}
 
             <div>
               <button
                 type="submit"
+                data-testid="submit-button"
                 disabled={loading}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >

@@ -10,12 +10,10 @@ module.exports = defineConfig({
   fullyParallel: false,
   /* Reuse browser context between tests in the same file */
   preserveOutput: 'always',
-  /* Global setup for shared test user */
-  globalSetup: require.resolve('./tests/e2e/global-setup.js'),
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry only once for fast feedback */
+  retries: 0,
   /* Opt out of parallel tests on CI. */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -27,6 +25,17 @@ module.exports = defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
+    /* Record video on failure for debugging */
+    video: 'retain-on-failure',
+    
+    /* Take screenshot on failure */
+    screenshot: 'only-on-failure',
+    
+    /* Fast timeouts for quick failure */
+    actionTimeout: 5000, // 5 seconds for actions
+    navigationTimeout: 5000, // 5 seconds for navigation
+    testTimeout: 5000, // 5 seconds max per test
     
     /* Reuse browser context between tests */
     contextOptions: {

@@ -30,14 +30,37 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: '22.x'
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm --version
+        npm ci --legacy-peer-deps
+    
+    - name: Install system dependencies for Playwright
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libnss3 \
+          libnspr4 \
+          libatk1.0-0 \
+          libatk-bridge2.0-0 \
+          libcups2 \
+          libdrm2 \
+          libdbus-1-3 \
+          libxkbcommon0 \
+          libxcomposite1 \
+          libxdamage1 \
+          libxfixes3 \
+          libxrandr2 \
+          libgbm1 \
+          libpango-1.0-0 \
+          libcairo2 \
+          libasound2t64
     
     - name: Install Playwright Browsers
-      run: npm run test:e2e:install
+      run: npx playwright install chromium
     
     - name: Start Firebase Emulators
       run: npm run emulators &
@@ -49,26 +72,49 @@ jobs:
         timeout 60 bash -c 'until curl -f http://localhost:4000; do sleep 2; done'
     
     - name: Start React app
-      run: npm run start:frontend &
+      run: |
+        npm run start:frontend > react-app.log 2>&1 &
+        echo $! > react-app.pid
       env:
         CI: true
+        BROWSER: none
+        REACT_APP_USE_EMULATORS: true
+        REACT_APP_FIREBASE_API_KEY: AIzaSyDemoKeyForLocalEmulators123456789
+        REACT_APP_FIREBASE_AUTH_DOMAIN: demo-project.firebaseapp.com
+        REACT_APP_FIREBASE_PROJECT_ID: demo-project
+        REACT_APP_FIREBASE_STORAGE_BUCKET: demo-project.appspot.com
+        REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "123456789"
+        REACT_APP_FIREBASE_APP_ID: 1:123456789:web:abcdef123456
+        REACT_APP_FIREBASE_MEASUREMENT_ID: G-DEMO123456
+        REACT_APP_ENV: development
+        REACT_APP_DEBUG_LOGS: true
     
     - name: Wait for React app to be ready
       run: |
-        timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+        timeout 120 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+        sleep 10
+        echo "React app started successfully"
+    
+    - name: Debug - Check if app is running
+      run: |
+        echo "=== React App Logs ==="
+        cat react-app.log || echo "No React app log found"
+        echo ""
+        echo "=== Checking if React app is running ==="
+        curl -v http://localhost:3000 2>&1 | head -50 || true
+        echo ""
+        echo "=== Checking if emulators are running ==="
+        curl -v http://localhost:4000 || true
+        echo ""
+        echo "=== Running processes ==="
+        ps aux | grep -E 'node|react-scripts|firebase' | grep -v grep || true
     
     - name: Run E2E tests (Local)
       if: ${{ github.event.inputs.test_production != 'true' }}
       run: npm run test:e2e
       env:
         CI: true
-    
-    - name: Run E2E tests (Production)
-      if: ${{ github.event.inputs.test_production == 'true' }}
-      run: npm run test:e2e
-      env:
-        CI: true
-        PLAYWRIGHT_BASE_URL: ${{ github.event.inputs.production_url || 'https://your-app.vercel.app' }}
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
     
     - name: Upload Playwright Report
       uses: actions/upload-artifact@v4
@@ -76,7 +122,7 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
-        retention-days: 30
+        retention-days: 1
     
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
@@ -84,4 +130,4 @@ jobs:
       with:
         name: test-results
         path: test-results/
-        retention-days: 30
+        retention-days: 1

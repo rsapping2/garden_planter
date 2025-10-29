@@ -23,9 +23,9 @@ const getFirebaseErrorMessage = (errorCode) => {
     case 'auth/invalid-credential':
       return 'Wrong email or password. Please try again.';
     case 'auth/user-not-found':
-      return 'No account found with this email address.';
+      return 'Wrong email or password. Please try again.';
     case 'auth/wrong-password':
-      return 'Incorrect password. Please try again.';
+      return 'Wrong email or password. Please try again.';
     case 'auth/too-many-requests':
       return 'Too many failed attempts. Please try again later.';
     case 'auth/weak-password':

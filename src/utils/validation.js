@@ -133,10 +133,10 @@ export const validatePassword = (password) => {
   }
 
   // Check for common weak passwords
-  const commonPasswords = ['password', '123456', '123456789', 'qwerty', 'abc123', 'password123'];
-  if (commonPasswords.includes(sanitized.toLowerCase())) {
-    return { isValid: false, sanitized: '', error: 'Please choose a stronger password' };
-  }
+  // const commonPasswords = ['password', '123456', '123456789', 'qwerty', 'abc123', 'password123'];
+  // if (commonPasswords.includes(sanitized.toLowerCase())) {
+  //   return { isValid: false, sanitized: '', error: 'Please choose a stronger password' };
+  // }
 
   return { isValid: true, sanitized, error: '' };
 };

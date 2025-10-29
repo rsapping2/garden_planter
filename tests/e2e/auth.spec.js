@@ -7,8 +7,51 @@ test.describe('User Authentication', () => {
     // Create a shared page context for all tests in this describe block
     const context = await browser.newContext();
     page = await context.newPage();
+  });
+  
+  test.beforeEach(async () => {
+    // Reload the auth page before each test to ensure clean state
     await page.goto('/auth');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    // Wait for the auth form to be visible (or dashboard if already logged in)
+    try {
+      await page.waitForSelector('form', { timeout: 5000 });
+    } catch (e) {
+      // If form not found, might be on dashboard - afterEach will handle it
+    }
+  });
+  
+  test.afterEach(async () => {
+    // Ensure user is signed out after each test
+    // Navigate to auth page - if we get redirected to dashboard, we're still signed in
+    await page.goto('/auth', { waitUntil: 'domcontentloaded' });
+    
+    // Check if we ended up on dashboard (means we're signed in)
+    if (page.url().includes('/dashboard')) {
+      // Sign out if sign out button is visible
+      const logoutButton = page.locator('button:has-text("Sign Out")');
+      if (await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await logoutButton.click();
+        await page.waitForURL(url => url.pathname.includes('/auth'), { timeout: 5000 });
+      }
+    }
+    
+    // Clear all storage to ensure clean state
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+      // Clear IndexedDB (Firebase Auth storage)
+      if (window.indexedDB) {
+        indexedDB.databases().then((dbs) => {
+          dbs.forEach(db => {
+            if (db.name) indexedDB.deleteDatabase(db.name);
+          });
+        }).catch(() => {});
+      }
+    });
+    
+    // Navigate to auth page one more time to ensure we're there
+    await page.goto('/auth', { waitUntil: 'domcontentloaded' });
   });
   
   test.afterAll(async () => {
@@ -16,6 +59,52 @@ test.describe('User Authentication', () => {
     if (page) {
       await page.close();
     }
+  });
+
+  test('should display error for invalid credentials', async () => {
+    // Ensure all login form fields are visible before proceeding
+    await page.waitForSelector('[data-testid="email-input"]', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="password-input"]', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('[data-testid="submit-button"]', { state: 'visible', timeout: 10000 });
+    
+    // Check if we're in signup mode (has confirm password field) and need to switch to login
+    const confirmPasswordField = page.locator('[data-testid="confirm-password-input"]');
+    const isSignupMode = await confirmPasswordField.isVisible().catch(() => false);
+    
+    if (isSignupMode) {
+      // We're in signup mode, switch to login
+      const switchToLoginButton = page.locator('[data-testid="switch-to-login-button"]');
+      if (await switchToLoginButton.isVisible({ timeout: 2000 })) {
+        await switchToLoginButton.click({ timeout: 3000 });
+        await page.waitForTimeout(1000);
+        // Wait for form to stabilize after mode switch
+        await page.waitForSelector('[data-testid="email-input"]', { state: 'visible', timeout: 5000 });
+        await page.waitForSelector('[data-testid="password-input"]', { state: 'visible', timeout: 5000 });
+      }
+    }
+    
+    // Final wait to ensure React has finished rendering
+    await page.waitForTimeout(500);
+    
+    // Fill in invalid credentials using test IDs
+    await page.locator('[data-testid="email-input"]').fill('invalid@example.com');
+    await page.locator('[data-testid="password-input"]').fill('wrongpassword');
+    
+    // Submit form
+    await page.locator('[data-testid="submit-button"]').click();
+    
+    // Wait for error message
+    await page.waitForTimeout(2000);
+    
+    // Check for error message - be more flexible
+    const errorMessage = page.locator('text=/invalid|incorrect|wrong|error|failed|denied/i');
+    const hasErrorMessage = await errorMessage.count() > 0;
+    
+    // If no error message, check if we're still on the auth page (which indicates failure)
+    const finalUrl = page.url();
+    const stillOnAuthPage = finalUrl.includes('/auth');
+    
+    expect(hasErrorMessage || stillOnAuthPage).toBeTruthy();
   });
 
   test('should display login form by default', async () => {
@@ -120,7 +209,7 @@ test.describe('User Authentication', () => {
     
     if (await confirmPasswordInput.count() > 0) {
       // Enter different passwords
-      await passwordInput.fill('password123');
+      await passwordInput.fill('Password!2#');
       await confirmPasswordInput.fill('different123');
       await submitButton.click();
       
@@ -140,7 +229,7 @@ test.describe('User Authentication', () => {
     
     // Fill in valid test credentials
     await page.locator('input[type="email"]').fill('test@example.com');
-    await page.locator('input[type="password"]').first().fill('password123');
+    await page.locator('input[type="password"]').first().fill('Password!2#');
     
     // Submit form
     await page.locator('button[type="submit"]').click();
@@ -192,9 +281,9 @@ test.describe('User Authentication', () => {
       await nameInput.fill('Test User');
     }
     await emailInput.fill('newuser@example.com');
-    await passwordInput.fill('password123');
+    await passwordInput.fill('Password!2#');
     if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('password123');
+      await confirmPasswordInput.fill('Password!2#');
     }
     if (await zipInput.count() > 0) {
       await zipInput.fill('12345');
@@ -224,36 +313,6 @@ test.describe('User Authentication', () => {
     expect(hasSuccess).toBeTruthy();
   });
 
-  test('should display error for invalid credentials', async () => {
-    // Make sure we're in login mode (not signup)
-    const loginToggle = page.locator('button, a').filter({ hasText: /login|sign in/i });
-    if (await loginToggle.count() > 0) {
-      await loginToggle.click();
-      await page.waitForTimeout(500);
-    }
-    
-    // Fill in invalid credentials
-    await page.locator('input[type="email"]').fill('invalid@example.com');
-    await page.locator('input[type="password"]').first().fill('wrongpassword');
-    
-    // Submit form
-    await page.locator('button[type="submit"]').click();
-    
-    // Wait for error message
-    await page.waitForTimeout(2000);
-    
-    // Check for error message - be more flexible
-    const errorMessage = page.locator('text=/invalid|incorrect|wrong|error|failed|denied/i');
-    const hasErrorMessage = await errorMessage.count() > 0;
-    
-    // If no error message, check if we're still on the auth page (which indicates failure)
-    const currentUrl = page.url();
-    const stillOnAuthPage = currentUrl.includes('/auth');
-    
-    expect(hasErrorMessage || stillOnAuthPage).toBeTruthy();
-  });
-
-
   test('should have accessible form elements', async () => {
     // Check for proper labels
     const emailInput = page.locator('input[type="email"]');
@@ -275,36 +334,36 @@ test.describe('User Authentication', () => {
     // Note: This test assumes the app has proper duplicate email prevention
     // If the app doesn't prevent duplicates, this test will fail and indicate a bug
     
-    const testEmail = `test-${Date.now()}@example.com`;
+    const testEmail = `auth-test-${Date.now()}@example.com`;
     
-    // Switch to signup mode
-    const signupToggle = page.locator('button, a').filter({ hasText: /sign up|register/i });
-    if (await signupToggle.count() > 0) {
+    // Switch to signup mode using test ID
+    const signupToggle = page.locator('[data-testid="switch-to-signup-button"]');
+    if (await signupToggle.isVisible({ timeout: 2000 })) {
       await signupToggle.click();
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
     }
     
-    // Fill in signup form with unique email
-    const nameInput = page.locator('input[name*="name"], input[placeholder*="name"]');
-    const emailInput = page.locator('input[type="email"]');
-    const passwordInput = page.locator('input[type="password"]').first();
-    const confirmPasswordInput = page.locator('input[type="password"]').nth(1);
-    const zipInput = page.locator('input[name*="zip"], input[placeholder*="zip"]');
+    // Fill in signup form with unique email using test IDs
+    const nameInput = page.locator('[data-testid="name-input"]');
+    const emailInput = page.locator('[data-testid="email-input"]');
+    const passwordInput = page.locator('[data-testid="password-input"]');
+    const confirmPasswordInput = page.locator('[data-testid="confirm-password-input"]');
+    const zipInput = page.locator('[data-testid="zipcode-input"]');
     
     if (await nameInput.count() > 0) {
       await nameInput.fill('Test User');
     }
     await emailInput.fill(testEmail);
-    await passwordInput.fill('password123');
+    await passwordInput.fill('Password!2#');
     if (await confirmPasswordInput.count() > 0) {
-      await confirmPasswordInput.fill('password123');
+      await confirmPasswordInput.fill('Password!2#');
     }
     if (await zipInput.count() > 0) {
       await zipInput.fill('12345');
     }
     
-    // Submit first signup
-    await page.locator('button[type="submit"]').click();
+    // Submit first signup using test ID
+    await page.locator('[data-testid="submit-button"]').click();
     await page.waitForTimeout(3000);
     
     // Check if first signup was successful
@@ -318,7 +377,14 @@ test.describe('User Authentication', () => {
       return;
     }
     
-    // Navigate back to auth page for second signup attempt
+    // Log out first, then navigate back to auth page for second signup attempt
+    // Look for logout button/link
+    const logoutButton = page.locator('button, a').filter({ hasText: /logout|sign out|log out/i });
+    if (await logoutButton.count() > 0) {
+      await logoutButton.click();
+      await page.waitForTimeout(1000); // Wait for logout to complete
+    }
+    
     await page.goto('/auth');
     await page.waitForLoadState('networkidle');
     
@@ -341,8 +407,8 @@ test.describe('User Authentication', () => {
       await zipInput.fill('54321');
     }
     
-    // Submit second signup attempt
-    await page.locator('button[type="submit"]').click();
+    // Submit second signup attempt using test ID
+    await page.locator('[data-testid="submit-button"]').click();
     await page.waitForTimeout(3000);
     
     // Check for error message indicating email already exists

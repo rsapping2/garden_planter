@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGarden } from '../contexts/GardenContext';
 
 const DayTaskModal = ({ isOpen, onClose, selectedDate, tasks }) => {
-  const { completeTask, deleteTask } = useGarden();
+  const { completeTask, deleteTask, gardens } = useGarden();
   const [hasChanges, setHasChanges] = useState(false);
 
   const getTaskIcon = (taskType) => {
@@ -108,7 +108,9 @@ const DayTaskModal = ({ isOpen, onClose, selectedDate, tasks }) => {
                               {task.gardenId && (
                                 <>
                                   <span className="text-gray-400">•</span>
-                                  <span className="text-sm text-gray-600">Garden {task.gardenId}</span>
+                                  <span className="text-sm text-gray-600">
+                                    {gardens.find(g => g.id === task.gardenId)?.name || `Garden ${task.gardenId}`}
+                                  </span>
                                 </>
                               )}
                             </div>

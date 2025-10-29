@@ -4,364 +4,364 @@
 export const ZONE_PLANTING_DATES = {
   tomato: {
     '3-4': { 
-      plantingStart: '2024-06-01', 
-      plantingEnd: '2024-07-15',
-      harvestStart: '2024-08-15',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-06-01', 
+      plantingEnd: '2025-07-15',
+      harvestStart: '2025-08-15',
+      harvestEnd: '2025-09-30'
     },
     '5-6': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-09-30'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-10-15'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-10-15'
     },
     '9-10': { 
-      plantingStart: '2024-03-01', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-11-15'
+      plantingStart: '2025-03-01', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-11-15'
     },
     '11': { 
-      plantingStart: '2024-02-01', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-05-01',
-      harvestEnd: '2024-12-15'
+      plantingStart: '2025-02-01', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-05-01',
+      harvestEnd: '2025-12-15'
     }
   },
   
   lettuce: {
     '3-4': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-07-30'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-07-30'
     },
     '5-6': { 
-      plantingStart: '2024-04-01', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-07-15'
+      plantingStart: '2025-04-01', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-07-15'
     },
     '7-8': { 
-      plantingStart: '2024-03-01', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-04-15',
-      harvestEnd: '2024-06-30'
+      plantingStart: '2025-03-01', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-04-15',
+      harvestEnd: '2025-06-30'
     },
     '9-10': { 
-      plantingStart: '2024-02-01', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-03-15',
-      harvestEnd: '2024-05-31'
+      plantingStart: '2025-02-01', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-03-15',
+      harvestEnd: '2025-05-31'
     },
     '11': { 
-      plantingStart: '2024-01-01', 
-      plantingEnd: '2024-02-15',
-      harvestStart: '2024-02-15',
-      harvestEnd: '2024-04-30'
+      plantingStart: '2025-01-01', 
+      plantingEnd: '2025-02-15',
+      harvestStart: '2025-02-15',
+      harvestEnd: '2025-04-30'
     }
   },
   
   carrot: {
     '3-4': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-08-01',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-08-01',
+      harvestEnd: '2025-09-15'
     },
     '5-6': { 
-      plantingStart: '2024-04-01', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-08-15'
+      plantingStart: '2025-04-01', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-08-15'
     },
     '7-8': { 
-      plantingStart: '2024-03-01', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-08-15'
+      plantingStart: '2025-03-01', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-08-15'
     },
     '9-10': { 
-      plantingStart: '2024-02-01', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-07-15'
+      plantingStart: '2025-02-01', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-07-15'
     },
     '11': { 
-      plantingStart: '2024-01-01', 
-      plantingEnd: '2024-02-15',
-      harvestStart: '2024-04-15',
-      harvestEnd: '2024-06-15'
+      plantingStart: '2025-01-01', 
+      plantingEnd: '2025-02-15',
+      harvestStart: '2025-04-15',
+      harvestEnd: '2025-06-15'
     }
   },
   
   pepper: {
     '3-4': { 
-      plantingStart: '2024-06-01', 
-      plantingEnd: '2024-07-01',
-      harvestStart: '2024-08-15',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-06-01', 
+      plantingEnd: '2025-07-01',
+      harvestStart: '2025-08-15',
+      harvestEnd: '2025-09-30'
     },
     '5-6': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-08-01',
-      harvestEnd: '2024-10-15'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-08-01',
+      harvestEnd: '2025-10-15'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-10-15'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-10-15'
     },
     '9-10': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-11-15'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-11-15'
     },
     '11': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-12-15'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-12-15'
     }
   },
   
   cucumber: {
     '3-4': { 
-      plantingStart: '2024-06-01', 
-      plantingEnd: '2024-07-01',
-      harvestStart: '2024-08-01',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-06-01', 
+      plantingEnd: '2025-07-01',
+      harvestStart: '2025-08-01',
+      harvestEnd: '2025-09-15'
     },
     '5-6': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-09-30'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-09-30'
     },
     '9-10': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-10-31'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-10-31'
     },
     '11': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-05-01',
-      harvestEnd: '2024-11-30'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-05-01',
+      harvestEnd: '2025-11-30'
     }
   },
   
   beans: {
     '3-4': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-09-15'
     },
     '5-6': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-01',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-01',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-09-15'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-09-15'
     },
     '9-10': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-09-15'
     },
     '11': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-04-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-04-15',
+      harvestEnd: '2025-09-15'
     }
   },
   
   corn: {
     '3-4': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-08-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-08-15',
+      harvestEnd: '2025-09-15'
     },
     '5-6': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-01',
-      harvestStart: '2024-08-01',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-01',
+      harvestStart: '2025-08-01',
+      harvestEnd: '2025-09-15'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-09-15'
     },
     '9-10': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-08-15'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-08-15'
     },
     '11': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-07-15'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-07-15'
     }
   },
   
   potato: {
     '3-4': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-01',
-      harvestStart: '2024-08-15',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-01',
+      harvestStart: '2025-08-15',
+      harvestEnd: '2025-09-30'
     },
     '5-6': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-08-01',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-08-01',
+      harvestEnd: '2025-09-30'
     },
     '7-8': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-09-30'
     },
     '9-10': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-08-31'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-08-31'
     },
     '11': { 
-      plantingStart: '2024-01-15', 
-      plantingEnd: '2024-02-15',
-      harvestStart: '2024-05-01',
-      harvestEnd: '2024-07-31'
+      plantingStart: '2025-01-15', 
+      plantingEnd: '2025-02-15',
+      harvestStart: '2025-05-01',
+      harvestEnd: '2025-07-31'
     }
   },
   
   spinach: {
     '3-4': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-07-15'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-07-15'
     },
     '5-6': { 
-      plantingStart: '2024-04-01', 
-      plantingEnd: '2024-05-01',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-07-01'
+      plantingStart: '2025-04-01', 
+      plantingEnd: '2025-05-01',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-07-01'
     },
     '7-8': { 
-      plantingStart: '2024-03-01', 
-      plantingEnd: '2024-04-01',
-      harvestStart: '2024-04-15',
-      harvestEnd: '2024-06-15'
+      plantingStart: '2025-03-01', 
+      plantingEnd: '2025-04-01',
+      harvestStart: '2025-04-15',
+      harvestEnd: '2025-06-15'
     },
     '9-10': { 
-      plantingStart: '2024-02-01', 
-      plantingEnd: '2024-03-01',
-      harvestStart: '2024-03-15',
-      harvestEnd: '2024-05-15'
+      plantingStart: '2025-02-01', 
+      plantingEnd: '2025-03-01',
+      harvestStart: '2025-03-15',
+      harvestEnd: '2025-05-15'
     },
     '11': { 
-      plantingStart: '2024-01-01', 
-      plantingEnd: '2024-02-01',
-      harvestStart: '2024-02-15',
-      harvestEnd: '2024-04-15'
+      plantingStart: '2025-01-01', 
+      plantingEnd: '2025-02-01',
+      harvestStart: '2025-02-15',
+      harvestEnd: '2025-04-15'
     }
   },
   
   strawberry: {
     '3-4': { 
-      plantingStart: '2024-05-01', 
-      plantingEnd: '2024-06-01',
-      harvestStart: '2024-06-15',
-      harvestEnd: '2024-08-15'
+      plantingStart: '2025-05-01', 
+      plantingEnd: '2025-06-01',
+      harvestStart: '2025-06-15',
+      harvestEnd: '2025-08-15'
     },
     '5-6': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-08-01'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-08-01'
     },
     '7-8': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-05-15',
-      harvestEnd: '2024-07-15'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-05-15',
+      harvestEnd: '2025-07-15'
     },
     '9-10': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-04-15',
-      harvestEnd: '2024-06-15'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-04-15',
+      harvestEnd: '2025-06-15'
     },
     '11': { 
-      plantingStart: '2024-01-15', 
-      plantingEnd: '2024-02-15',
-      harvestStart: '2024-03-15',
-      harvestEnd: '2024-05-15'
+      plantingStart: '2025-01-15', 
+      plantingEnd: '2025-02-15',
+      harvestStart: '2025-03-15',
+      harvestEnd: '2025-05-15'
     }
   },
   
   basil: {
     '3-4': { 
-      plantingStart: '2024-06-01', 
-      plantingEnd: '2024-07-01',
-      harvestStart: '2024-07-15',
-      harvestEnd: '2024-09-15'
+      plantingStart: '2025-06-01', 
+      plantingEnd: '2025-07-01',
+      harvestStart: '2025-07-15',
+      harvestEnd: '2025-09-15'
     },
     '5-6': { 
-      plantingStart: '2024-05-15', 
-      plantingEnd: '2024-06-15',
-      harvestStart: '2024-07-01',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-05-15', 
+      plantingEnd: '2025-06-15',
+      harvestStart: '2025-07-01',
+      harvestEnd: '2025-09-30'
     },
     '7-8': { 
-      plantingStart: '2024-04-15', 
-      plantingEnd: '2024-05-15',
-      harvestStart: '2024-06-01',
-      harvestEnd: '2024-09-30'
+      plantingStart: '2025-04-15', 
+      plantingEnd: '2025-05-15',
+      harvestStart: '2025-06-01',
+      harvestEnd: '2025-09-30'
     },
     '9-10': { 
-      plantingStart: '2024-03-15', 
-      plantingEnd: '2024-04-15',
-      harvestStart: '2024-05-01',
-      harvestEnd: '2024-10-31'
+      plantingStart: '2025-03-15', 
+      plantingEnd: '2025-04-15',
+      harvestStart: '2025-05-01',
+      harvestEnd: '2025-10-31'
     },
     '11': { 
-      plantingStart: '2024-02-15', 
-      plantingEnd: '2024-03-15',
-      harvestStart: '2024-04-01',
-      harvestEnd: '2024-11-30'
+      plantingStart: '2025-02-15', 
+      plantingEnd: '2025-03-15',
+      harvestStart: '2025-04-01',
+      harvestEnd: '2025-11-30'
     }
   }
 };
