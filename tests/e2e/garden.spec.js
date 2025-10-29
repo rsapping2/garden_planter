@@ -58,6 +58,16 @@ test.describe('Garden Management', () => {
     context = await browser.newContext();
     page = await context.newPage();
 
+    // Capture console logs and errors from the browser
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        console.error(`🔴 Browser console error: ${msg.text()}`);
+      }
+    });
+    page.on('pageerror', error => {
+      console.error(`🔴 Page error: ${error.message}`);
+    });
+
     // Navigate to auth page
     await page.goto('/auth');
     await page.waitForSelector('input[type="email"]', { timeout: 5000 });
@@ -83,14 +93,27 @@ test.describe('Garden Management', () => {
     // Handle email verification if present
     const hasDemoCode = await page.locator('code.bg-blue-100').isVisible().catch(() => false);
     if (hasDemoCode) {
+      console.log('📧 Email verification required - entering code');
       const demoCode = await page.locator('code.bg-blue-100').textContent();
+      console.log(`🔑 Demo code: ${demoCode}`);
       await page.locator('input[placeholder="123456"]').fill(demoCode);
       await page.locator('button:has-text("Verify Email")').click();
-      await page.waitForTimeout(500);
+      console.log('✅ Verification submitted');
+      await page.waitForTimeout(2000); // Longer wait for verification processing
     }
 
+    // Debug: print current URL
+    console.log(`📍 Current URL after signup/verification: ${page.url()}`);
+
     // Wait for redirect to dashboard (longer timeout for CI)
-    await page.waitForURL(url => url.pathname.includes('/dashboard'), { timeout: 15000 });
+    try {
+      await page.waitForURL(url => url.pathname.includes('/dashboard'), { timeout: 20000 });
+      console.log(`✅ Successfully navigated to: ${page.url()}`);
+    } catch (error) {
+      console.error(`❌ Failed to navigate to dashboard. Current URL: ${page.url()}`);
+      throw error;
+    }
+    
     await page.waitForSelector('h1', { timeout: 10000 });
 
     console.log(`✅ Test user logged in successfully`);
